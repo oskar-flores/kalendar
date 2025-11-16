@@ -1,11 +1,14 @@
 """File system cache implementation."""
 
 import json
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
 from kalendar.domain.models.event import CalendarEvent
+
+logger = logging.getLogger(__name__)
 
 
 class FileSystemCache:
@@ -21,7 +24,18 @@ class FileSystemCache:
             cache_dir: Directory to store cache files
         """
         self.cache_dir = Path(cache_dir)
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+        try:
+            self.cache_dir.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            # Fallback to user cache directory if system cache is not writable
+            fallback_dir = Path.home() / ".cache" / "kalendar"
+            logger.warning(
+                f"Permission denied for cache directory '{cache_dir}'. "
+                f"Falling back to '{fallback_dir}'"
+            )
+            self.cache_dir = fallback_dir
+            self.cache_dir.mkdir(parents=True, exist_ok=True)
 
     def save_events(
         self, source_id: str, events: list[CalendarEvent], timestamp: datetime
@@ -62,7 +76,11 @@ class FileSystemCache:
             with open(cache_file) as f:
                 data = json.load(f)
 
-            return [self._deserialize_event(e) for e in data.get("events", [])]
+            # Validate required keys exist
+            if "events" not in data:
+                return None
+
+            return [self._deserialize_event(e) for e in data["events"]]
         except (json.JSONDecodeError, KeyError, ValueError):
             # Invalid cache file - return None
             return None
