@@ -8,6 +8,7 @@ from kalendar.application.usecases.render_monthly_view import RenderMonthlyViewU
 from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 from kalendar.application.usecases.update_display import UpdateDisplayUseCase
 from kalendar.cli.dependencies import Dependencies
+from kalendar.domain.services.daily_view_builder import DailyViewBuilder
 from kalendar.domain.services.event_aggregator import EventAggregator
 from kalendar.domain.services.monthly_view_builder import MonthlyViewBuilder
 
@@ -30,6 +31,7 @@ class Application:
         # Domain services
         self._event_aggregator: EventAggregator | None = None
         self._monthly_view_builder: MonthlyViewBuilder | None = None
+        self._daily_view_builder: DailyViewBuilder | None = None
 
         # Use cases
         self._sync_calendars_use_case: SyncCalendarsUseCase | None = None
@@ -49,6 +51,13 @@ class Application:
         if self._monthly_view_builder is None:
             self._monthly_view_builder = MonthlyViewBuilder()
         return self._monthly_view_builder
+
+    @property
+    def daily_view_builder(self) -> DailyViewBuilder:
+        """Get daily view builder service."""
+        if self._daily_view_builder is None:
+            self._daily_view_builder = DailyViewBuilder()
+        return self._daily_view_builder
 
     @property
     def sync_calendars(self) -> SyncCalendarsUseCase:
@@ -77,6 +86,7 @@ class Application:
             self._render_monthly_view_use_case = RenderMonthlyViewUseCase(
                 renderer=self.deps.renderer,
                 monthly_view_builder=self.monthly_view_builder,
+                daily_view_builder=self.daily_view_builder,
             )
         return self._render_monthly_view_use_case
 
