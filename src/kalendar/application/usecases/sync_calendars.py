@@ -60,7 +60,7 @@ class SyncCalendarsUseCase:
         - Use cached data as fallback if available
     """
 
-    def __init__(self, config: Any, cache: ICache, event_aggregator: Any) -> None:
+    def __init__(self, config: Any, cache: ICache, event_aggregator: Any, dependencies: Any = None) -> None:
         """
         Initialize SyncCalendarsUseCase.
 
@@ -68,10 +68,12 @@ class SyncCalendarsUseCase:
             config: Configuration with calendar sources
             cache: Cache implementation for storing events
             event_aggregator: Event aggregator service (unused for now)
+            dependencies: Dependencies container with calendar source factory
         """
         self._config = config
         self._cache = cache
         self._event_aggregator = event_aggregator
+        self._dependencies = dependencies
 
     def execute(
         self,
@@ -94,7 +96,12 @@ class SyncCalendarsUseCase:
 
         # Use defaults if not provided
         if calendar_sources is None:
-            calendar_sources = self._config.get_enabled_sources()
+            # Use factory from dependencies to create ICalendarSource implementations
+            if self._dependencies is None:
+                raise ValueError(
+                    "Dependencies not provided. Cannot create calendar sources automatically."
+                )
+            calendar_sources = self._dependencies.get_calendar_sources()
         if start_date is None:
             start_date = date.today()
         if end_date is None:

@@ -34,6 +34,9 @@ dev = [
     "types-pyyaml",
     "types-pillow",
 ]
+hardware = [
+    "waveshare-epd>=1.0.0",
+]
 
 [project.scripts]
 kalendar = "kalendar.cli.main:main"
@@ -149,6 +152,7 @@ module = [
     "caldav.*",
     "icalendar.*",
     "recurring_ical_events.*",
+    "waveshare_epd.*",
 ]
 ignore_missing_imports = true
 

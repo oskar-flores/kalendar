@@ -63,7 +63,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Deploy application
 cd ~/kalendar
-uv sync
+uv sync --extra hardware
 
 # Configure calendar sources (see quickstart.md)
 cp config/example.config.yaml config/config.yaml

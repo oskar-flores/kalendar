@@ -90,7 +90,7 @@ class TestSyncCalendarsUseCase:
         from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 
         # Arrange
-        use_case = SyncCalendarsUseCase(config=mock_config, cache=mock_cache, event_aggregator=mock_event_aggregator)
+        use_case = SyncCalendarsUseCase(config=mock_config, cache=mock_cache, event_aggregator=mock_event_aggregator, dependencies=Mock())
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -108,7 +108,7 @@ class TestSyncCalendarsUseCase:
         from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 
         # Arrange
-        use_case = SyncCalendarsUseCase(config=mock_config, cache=mock_cache, event_aggregator=mock_event_aggregator)
+        use_case = SyncCalendarsUseCase(config=mock_config, cache=mock_cache, event_aggregator=mock_event_aggregator, dependencies=Mock())
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -155,7 +155,7 @@ class TestSyncCalendarsUseCase:
             ]
         )
 
-        use_case = SyncCalendarsUseCase(config=mock_config, cache=mock_cache, event_aggregator=mock_event_aggregator)
+        use_case = SyncCalendarsUseCase(config=mock_config, cache=mock_cache, event_aggregator=mock_event_aggregator, dependencies=Mock())
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -191,7 +191,7 @@ class TestSyncCalendarsUseCase:
             ]
         )
 
-        use_case = SyncCalendarsUseCase(config=Mock(), cache=mock_cache, event_aggregator=Mock())
+        use_case = SyncCalendarsUseCase(config=Mock(), cache=mock_cache, event_aggregator=Mock(), dependencies=Mock())
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -240,7 +240,7 @@ class TestSyncCalendarsUseCase:
             ]
         )
 
-        use_case = SyncCalendarsUseCase(config=Mock(), cache=mock_cache, event_aggregator=Mock())
+        use_case = SyncCalendarsUseCase(config=Mock(), cache=mock_cache, event_aggregator=Mock(), dependencies=Mock())
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -257,7 +257,7 @@ class TestSyncCalendarsUseCase:
         from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 
         # Arrange
-        use_case = SyncCalendarsUseCase(config=Mock(), cache=mock_cache, event_aggregator=Mock())
+        use_case = SyncCalendarsUseCase(config=Mock(), cache=mock_cache, event_aggregator=Mock(), dependencies=Mock())
         start = date.today()
         end = start + timedelta(days=30)
 

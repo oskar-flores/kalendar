@@ -7,11 +7,18 @@ based on configuration, following Clean Architecture dependency inversion.
 from pathlib import Path
 from typing import Optional
 
+from typing import List
+
 from kalendar.domain.interfaces.ICache import ICache
+from kalendar.domain.interfaces.ICalendarSource import ICalendarSource, CalendarSourceConfig
 from kalendar.domain.interfaces.IConfigLoader import IConfigLoader
 from kalendar.domain.interfaces.IDisplayDriver import IDisplayDriver
 from kalendar.domain.interfaces.IImageRenderer import IImageRenderer
 from kalendar.domain.models.config import DisplayConfiguration
+from kalendar.domain.models.source import CalendarSource
+from kalendar.domain.models.enums import SourceType
+from kalendar.infrastructure.calendar.google_calendar_source import GoogleCalendarSource
+from kalendar.infrastructure.calendar.caldav_source import CalDAVSource
 from kalendar.infrastructure.display.simulator_driver import SimulatorDisplayDriver
 from kalendar.infrastructure.display.waveshare_driver import WaveshareEPD75BDriver
 from kalendar.infrastructure.rendering.weasyprint_renderer import WeasyPrintRenderer
@@ -121,6 +128,47 @@ class Dependencies:
                     self._display_driver = SimulatorDisplayDriver(output_dir="output")
 
         return self._display_driver
+
+    def create_calendar_source(self, source_config: CalendarSource) -> ICalendarSource:
+        """Create ICalendarSource implementation from CalendarSource configuration.
+
+        Args:
+            source_config: CalendarSource domain model with configuration
+
+        Returns:
+            ICalendarSource implementation (GoogleCalendarSource, CalDAVSource, or MockCalendarSource)
+
+        Raises:
+            ValueError: If source_type is unknown
+        """
+        # Convert CalendarSource to CalendarSourceConfig
+        config = CalendarSourceConfig(
+            source_id=source_config.id,
+            source_type=source_config.source_type.value,
+            calendar_id=source_config.calendar_id,
+            credentials=source_config.credentials or {},
+        )
+
+        # Factory pattern: create appropriate implementation
+        if source_config.source_type == SourceType.GOOGLE:
+            return GoogleCalendarSource(config)
+        elif source_config.source_type == SourceType.CALDAV:
+            return CalDAVSource(config)
+        elif source_config.source_type == SourceType.MOCK:
+            # Import MockCalendarSource from test fixtures
+            from tests.fixtures.mock_calendar_source import MockCalendarSource
+            return MockCalendarSource(config)
+        else:
+            raise ValueError(f"Unknown source type: {source_config.source_type}")
+
+    def get_calendar_sources(self) -> List[ICalendarSource]:
+        """Get all enabled calendar source implementations.
+
+        Returns:
+            List of ICalendarSource implementations for all enabled sources
+        """
+        source_configs = self.config.get_enabled_sources()
+        return [self.create_calendar_source(config) for config in source_configs]
 
     def reset(self) -> None:
         """Reset all cached dependencies (useful for testing)."""

@@ -62,6 +62,7 @@ class Application:
                 config=self.deps.config,
                 cache=self.deps.cache,
                 event_aggregator=self.event_aggregator,
+                dependencies=self.deps,
             )
         return self._sync_calendars_use_case
 
