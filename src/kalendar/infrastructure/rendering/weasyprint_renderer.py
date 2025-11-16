@@ -40,9 +40,16 @@ class WeasyPrintRenderer(IImageRenderer):
         - PNG output (800x480 for Waveshare 7.5" display)
     """
 
-    def __init__(self) -> None:
-        """Initialize WeasyPrint renderer."""
+    def __init__(self, template_dir: Optional[str] = None) -> None:
+        """Initialize WeasyPrint renderer.
+
+        Args:
+            template_dir: Optional path to template directory
+        """
         self._template_directory: Optional[Path] = None
+        if template_dir:
+            self._template_directory = Path(template_dir) if isinstance(template_dir, str) else template_dir
+
         self._jinja_env: Optional[Environment] = None
 
         logger.info("WeasyPrintRenderer initialized")

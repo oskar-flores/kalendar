@@ -38,21 +38,31 @@ class FileSystemCache:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
 
     def save_events(
-        self, source_id: str, events: list[CalendarEvent], timestamp: datetime
+        self, source_id: str, events: list, timestamp: datetime
     ) -> None:
         """Save events to cache for a specific source.
 
         Args:
             source_id: Calendar source ID
-            events: Events to cache
+            events: Events to cache (CalendarEvent objects or dicts)
             timestamp: Sync timestamp
         """
         cache_file = self.cache_dir / f"{source_id}.json"
 
+        # Serialize events - handle both CalendarEvent objects and dicts
+        serialized_events = []
+        for event in events:
+            if isinstance(event, dict):
+                # Already a dict, use as-is
+                serialized_events.append(event)
+            else:
+                # CalendarEvent object, serialize it
+                serialized_events.append(self._serialize_event(event))
+
         data = {
             "source_id": source_id,
             "last_sync": timestamp.isoformat(),
-            "events": [self._serialize_event(e) for e in events],
+            "events": serialized_events,
         }
 
         with open(cache_file, "w") as f:
