@@ -79,16 +79,13 @@ class CalDAVSource(ICalendarSource):
             AuthenticationError: If connection fails
         """
         try:
-            # Extract base URL from calendar URL for iCloud
-            # iCloud calendar URLs: https://caldav.icloud.com/[user-id]/calendars/[calendar-id]/
-            if "icloud.com" in self._config.calendar_id:
-                base_url = "https://caldav.icloud.com/"
-            else:
-                # For other servers, try to extract base URL
-                from urllib.parse import urlparse
+            # Extract base URL from calendar URL
+            # iCloud URLs: https://p42-caldav.icloud.com:443/[user-id]/calendars/[calendar-id]/
+            # Nextcloud URLs: https://cloud.example.com/remote.php/dav/calendars/user/calendar/
+            from urllib.parse import urlparse
 
-                parsed = urlparse(self._config.calendar_id)
-                base_url = f"{parsed.scheme}://{parsed.netloc}/"
+            parsed = urlparse(self._config.calendar_id)
+            base_url = f"{parsed.scheme}://{parsed.netloc}/"
 
             # Create DAV client
             self._client = DAVClient(url=base_url, username=self._username, password=self._password)
