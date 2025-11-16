@@ -38,6 +38,7 @@ hardware = [
     "waveshare-epd @ git+https://github.com/waveshare/e-Paper.git#subdirectory=RaspberryPi_JetsonNano/python",
     "spidev>=3.5",
     "gpiozero>=2.0",
+    "rpi-lgpio>=0.6",
 ]
 
 [project.scripts]
