@@ -57,6 +57,11 @@ class WaveshareEPD75BDriver(IDisplayDriver):
             DisplayHardwareError: If hardware initialization fails
         """
         try:
+            # Configure GPIO pin factory to use lgpio (modern backend for Raspberry Pi)
+            # This must be set before importing waveshare_epd
+            import os
+            os.environ.setdefault('GPIOZERO_PIN_FACTORY', 'lgpio')
+
             # Import Waveshare library (only available on Raspberry Pi)
             # This import will fail in development/test environments
             from waveshare_epd import epd7in5b_V2

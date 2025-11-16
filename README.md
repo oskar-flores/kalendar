@@ -39,7 +39,7 @@ uv run kalendar refresh --config config/dev.config.yaml --simulator
 ```bash
 # Install system dependencies
 sudo apt-get update
-sudo apt update && sudo apt install -y \
+sudo apt install -y \
   libffi-dev \
   pkg-config \
   build-essential \
@@ -53,10 +53,18 @@ sudo apt update && sudo apt install -y \
   tk8.6-dev \
   libharfbuzz-dev \
   libfribidi-dev \
-  libxcb1-dev
+  libxcb1-dev \
+  python3-lgpio \
+  libgpiod2
+
+# Add user to GPIO and SPI groups (required for hardware access)
+sudo usermod -a -G gpio,spi $USER
 
 # Enable SPI for e-paper display
 sudo raspi-config  # Interfacing Options -> SPI -> Yes
+
+# Log out and back in for group changes to take effect
+# Or run: exec su -l $USER
 
 # Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
