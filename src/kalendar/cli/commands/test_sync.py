@@ -19,7 +19,8 @@ def test_sync_command(args) -> int:
 
     try:
         # Create application
-        app = create_application(config_path=args.config)
+        cache_dir = getattr(args, 'cache_dir', None)
+        app = create_application(config_path=args.config, cache_dir=cache_dir)
 
         config = app.deps.config
         enabled_sources = config.get_enabled_sources()

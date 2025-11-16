@@ -86,6 +86,11 @@ For more information, see: docs/configuration.md
         help="Test calendar synchronization",
         description="Test connectivity to all configured calendar sources",
     )
+    test_sync_parser.add_argument(
+        "--cache-dir",
+        type=str,
+        help="Cache directory (default: /var/cache/kalendar)",
+    )
 
     # auth command
     auth_parser = subparsers.add_parser(

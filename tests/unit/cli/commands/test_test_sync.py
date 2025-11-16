@@ -92,7 +92,7 @@ class TestTestSyncCommand:
 
         # Verify
         assert exit_code == 0
-        mock_create_app.assert_called_once_with(config_path="config/test.yaml")
+        mock_create_app.assert_called_once_with(config_path="config/test.yaml", cache_dir=None)
         mock_app.sync_calendars.execute.assert_called_once()
 
         # Check output
@@ -257,3 +257,30 @@ class TestTestSyncCommand:
         captured = capsys.readouterr()
         # With verbose, should show traceback in stderr
         assert "Traceback" in captured.err or "RuntimeError" in captured.err
+
+    @patch("kalendar.cli.commands.test_sync.create_application")
+    def test_test_sync_custom_cache_dir(self, mock_create_app, mock_args, mock_successful_sync_result, capsys):
+        """Test test_sync_command respects custom cache directory."""
+        # Setup
+        mock_args.cache_dir = "/tmp/custom-cache"
+        mock_app = Mock()
+        mock_source = Mock()
+        mock_source.id = "source-1"
+        mock_source.name = "Test Calendar"
+        mock_source.source_type = Mock()
+        mock_source.source_type.value = "google"
+
+        mock_app.deps.config.get_enabled_sources.return_value = [mock_source]
+        mock_app.sync_calendars.execute.return_value = mock_successful_sync_result
+        mock_create_app.return_value = mock_app
+
+        # Execute
+        exit_code = test_sync_command(mock_args)
+
+        # Verify
+        assert exit_code == 0
+        # Should have called create_application with cache_dir
+        mock_create_app.assert_called_once_with(
+            config_path="config/test.yaml",
+            cache_dir="/tmp/custom-cache"
+        )
