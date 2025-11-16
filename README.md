@@ -39,8 +39,21 @@ uv run kalendar refresh --config config/dev.config.yaml --simulator
 ```bash
 # Install system dependencies
 sudo apt-get update
-sudo apt-get install python3.11 python3-cffi python3-brotli \
-  libpango-1.0-0 libpangoft2-1.0-0 python3-pil python3-numpy -y
+sudo apt update && sudo apt install -y \
+  libffi-dev \
+  pkg-config \
+  build-essential \
+  python3-dev \
+  libjpeg-dev \
+  zlib1g-dev \
+  libfreetype6-dev \
+  liblcms2-dev \
+  libwebp-dev \
+  tcl8.6-dev \
+  tk8.6-dev \
+  libharfbuzz-dev \
+  libfribidi-dev \
+  libxcb1-dev
 
 # Enable SPI for e-paper display
 sudo raspi-config  # Interfacing Options -> SPI -> Yes
