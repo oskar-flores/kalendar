@@ -10,7 +10,6 @@ Provides command-line interface for:
 
 import argparse
 import sys
-from pathlib import Path
 
 
 def main():
@@ -26,7 +25,9 @@ Examples:
   kalendar test-display                      # Test display with pattern
   kalendar test-sync                         # Test calendar connectivity
   kalendar auth google --credentials creds.json  # Authorize Google Calendar
-  kalendar discover-caldav --username you@icloud.com  # Find CalDAV URLs
+  kalendar discover-caldav --username you@icloud.com  # Find iCloud CalDAV URLs
+  kalendar discover-caldav --username you@gmail.com --service icloud  # Gmail-based Apple ID
+  kalendar discover-caldav --username you@gmail.com --service gmail   # Google Calendar CalDAV
 
 For more information, see: docs/configuration.md
         """,
@@ -122,9 +123,18 @@ For more information, see: docs/configuration.md
         help="App-specific password (will prompt if not provided)",
     )
     discover_parser.add_argument(
+        "--service",
+        type=str,
+        choices=["icloud", "gmail", "nextcloud"],
+        help="CalDAV service provider (icloud, gmail, or nextcloud)",
+    )
+    discover_parser.add_argument(
         "--server",
         type=str,
-        help="CalDAV server URL (auto-detected for iCloud if not provided)",
+        help=(
+            "CalDAV server URL (overrides --service, "
+            "auto-detected for iCloud emails if not provided)"
+        ),
     )
 
     # Parse arguments

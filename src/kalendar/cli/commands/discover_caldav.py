@@ -27,13 +27,33 @@ def discover_caldav_command(args) -> int:
         # Determine server URL
         server_url = args.server
         if not server_url:
-            # Auto-detect iCloud
-            if "icloud.com" in args.username.lower():
+            # Check if service is explicitly specified
+            if hasattr(args, 'service') and args.service:
+                service_urls = {
+                    "icloud": "https://caldav.icloud.com/",
+                    "gmail": "https://caldav.google.com/",
+                }
+
+                if args.service in service_urls:
+                    server_url = service_urls[args.service]
+                    print(f"\nUsing {args.service} CalDAV server: {server_url}")
+                elif args.service == "nextcloud":
+                    print("\nError: Nextcloud requires explicit --server URL")
+                    print("Each Nextcloud instance has a different URL")
+                    print("Example: --server https://cloud.example.com/remote.php/dav/")
+                    return 1
+            # Auto-detect iCloud based on email address
+            elif "icloud.com" in args.username.lower():
                 server_url = "https://caldav.icloud.com/"
-                print(f"\nAuto-detected iCloud CalDAV server")
+                print("\nAuto-detected iCloud CalDAV server")
             else:
-                print("\nError: --server must be specified for non-iCloud accounts")
-                print("Example: --server https://cloud.example.com/remote.php/dav/")
+                print("\nError: --service or --server must be specified for non-iCloud accounts")
+                print("\nAvailable services:")
+                print("  --service icloud   # Apple iCloud Calendar")
+                print("  --service gmail    # Google Calendar")
+                print("  --service nextcloud --server https://your.server.com/remote.php/dav/")
+                print("\nOr specify server directly:")
+                print("  --server https://cloud.example.com/remote.php/dav/")
                 return 1
 
         print(f"\nConnecting to: {server_url}")
@@ -79,9 +99,9 @@ def discover_caldav_command(args) -> int:
 
             print(f'  - id: "caldav-{safe_id}"')
             print(f'    name: "{name}"')
-            print(f'    source_type: "caldav"')
+            print('    source_type: "caldav"')
             print(f'    calendar_id: "{url}"')
-            print(f'    enabled: true')
+            print('    enabled: true')
             print()
 
         print("And add to your config/credentials.json:")
@@ -89,7 +109,7 @@ def discover_caldav_command(args) -> int:
         print("{")
         print('  "caldav": {')
         print(f'    "username": "{args.username}",')
-        print(f'    "app_password": "xxxx-xxxx-xxxx-xxxx"')
+        print('    "app_password": "xxxx-xxxx-xxxx-xxxx"')
         print("  }")
         print("}")
 
@@ -101,7 +121,7 @@ def discover_caldav_command(args) -> int:
         return 1
 
     except Exception as e:
-        print(f"\nError: CalDAV discovery failed")
+        print("\nError: CalDAV discovery failed")
         print(f"  {e}")
 
         if "401" in str(e) or "Unauthorized" in str(e):

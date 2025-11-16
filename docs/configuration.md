@@ -243,11 +243,22 @@ Create `config/credentials.json`:
 
 #### 2. Discover Calendar URLs
 
+**For @icloud.com email addresses (auto-detected):**
 ```bash
 uv run kalendar discover-caldav \
   --username your_apple_id@icloud.com \
   --password xxxx-xxxx-xxxx-xxxx
 ```
+
+**For non-@icloud.com Apple IDs (Gmail, Yahoo, etc.):**
+```bash
+uv run kalendar discover-caldav \
+  --username your_apple_id@gmail.com \
+  --service icloud \
+  --password xxxx-xxxx-xxxx-xxxx
+```
+
+Note: Many people use Gmail or other email addresses as their Apple ID. If your Apple ID is not an @icloud.com address, use the `--service icloud` parameter to specify that you want to connect to Apple's iCloud CalDAV server.
 
 Output will show:
 ```
@@ -324,6 +335,54 @@ Add to `config/credentials.json`:
 ```
 
 Note: Consider creating an app-specific password in Nextcloud for better security.
+
+### Google Calendar (CalDAV)
+
+Google Calendar can also be accessed via CalDAV (in addition to the OAuth method described in the Google Calendar section above).
+
+#### 1. Generate App-Specific Password
+
+1. Go to [Google Account App Passwords](https://myaccount.google.com/apppasswords)
+2. Sign in with your Google account
+3. Select "Mail" and "Other (Custom name)"
+4. Enter a name (e.g., "Kalendar CalDAV")
+5. Click "Generate"
+6. Copy the generated 16-character password
+
+#### 2. Discover Calendar URLs
+
+```bash
+uv run kalendar discover-caldav \
+  --username your_email@gmail.com \
+  --service gmail \
+  --password your-app-password
+```
+
+#### 3. Add to Configuration
+
+```yaml
+calendar_sources:
+  - id: "gmail-personal"
+    name: "Gmail Personal Calendar"
+    source_type: "caldav"
+    calendar_id: "https://caldav.google.com/user/your_calendar_id/"
+    enabled: true
+```
+
+#### 4. Update Credentials File
+
+Add to `config/credentials.json`:
+
+```json
+{
+  "caldav": {
+    "username": "your_email@gmail.com",
+    "app_password": "your-app-password"
+  }
+}
+```
+
+Note: Google Calendar via OAuth (see [Google Calendar](#google-calendar) section) is recommended over CalDAV as it provides better features and reliability.
 
 ## Credentials Management
 
