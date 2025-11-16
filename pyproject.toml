@@ -35,7 +35,7 @@ dev = [
     "types-pillow",
 ]
 hardware = [
-    "waveshare-epd>=1.0.0",
+    "waveshare-epd @ git+https://github.com/waveshare/e-Paper.git#subdirectory=RaspberryPi_JetsonNano/python",
 ]
 
 [project.scripts]

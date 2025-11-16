@@ -353,7 +353,7 @@ ssh pi@raspberrypi.local
 cd ~
 tar -xzf kalendar.tar.gz -C kalendar
 cd kalendar
-uv sync
+uv sync --extra hardware
 ```
 
 ### 5. Transfer Credentials
