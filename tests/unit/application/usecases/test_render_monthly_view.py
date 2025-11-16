@@ -13,6 +13,8 @@ from PIL import Image
 
 from src.kalendar.domain.models.event import CalendarEvent
 from src.kalendar.domain.models.view import MonthlyView, DailyView
+from src.kalendar.domain.models.config import DisplayConfiguration
+from src.kalendar.domain.models.enums import LayoutType, SourceType
 
 
 class TestRenderMonthlyViewUseCase:
@@ -66,12 +68,22 @@ class TestRenderMonthlyViewUseCase:
             )
         ]
 
+    @pytest.fixture
+    def mock_config(self) -> Mock:
+        """Create mock display configuration."""
+        config = Mock(spec=DisplayConfiguration)
+        config.timezone = "UTC"
+        config.week_start_day = 0
+        config.max_daily_events = 5
+        return config
+
     def test_render_monthly_view_returns_image(
         self,
         mock_renderer: Mock,
         mock_monthly_view_builder: Mock,
         mock_daily_view_builder: Mock,
         sample_events: list,
+        mock_config: Mock,
     ) -> None:
         """RenderMonthlyViewUseCase should return a PIL Image."""
         from src.kalendar.application.usecases.render_monthly_view import (
@@ -80,6 +92,7 @@ class TestRenderMonthlyViewUseCase:
 
         # Arrange
         use_case = RenderMonthlyViewUseCase(
+            config=mock_config,
             renderer=mock_renderer,
             monthly_view_builder=mock_monthly_view_builder,
             daily_view_builder=mock_daily_view_builder,
@@ -100,6 +113,7 @@ class TestRenderMonthlyViewUseCase:
         mock_monthly_view_builder: Mock,
         mock_daily_view_builder: Mock,
         sample_events: list,
+        mock_config: Mock,
     ) -> None:
         """RenderMonthlyViewUseCase should use MonthlyViewBuilder."""
         from src.kalendar.application.usecases.render_monthly_view import (
@@ -108,6 +122,7 @@ class TestRenderMonthlyViewUseCase:
 
         # Arrange
         use_case = RenderMonthlyViewUseCase(
+            config=mock_config,
             renderer=mock_renderer,
             monthly_view_builder=mock_monthly_view_builder,
             daily_view_builder=mock_daily_view_builder,
@@ -127,6 +142,7 @@ class TestRenderMonthlyViewUseCase:
         mock_monthly_view_builder: Mock,
         mock_daily_view_builder: Mock,
         sample_events: list,
+        mock_config: Mock,
     ) -> None:
         """RenderMonthlyViewUseCase should use DailyViewBuilder for today's events."""
         from src.kalendar.application.usecases.render_monthly_view import (
@@ -135,6 +151,7 @@ class TestRenderMonthlyViewUseCase:
 
         # Arrange
         use_case = RenderMonthlyViewUseCase(
+            config=mock_config,
             renderer=mock_renderer,
             monthly_view_builder=mock_monthly_view_builder,
             daily_view_builder=mock_daily_view_builder,
@@ -154,6 +171,7 @@ class TestRenderMonthlyViewUseCase:
         mock_monthly_view_builder: Mock,
         mock_daily_view_builder: Mock,
         sample_events: list,
+        mock_config: Mock,
     ) -> None:
         """RenderMonthlyViewUseCase should render HTML template."""
         from src.kalendar.application.usecases.render_monthly_view import (
@@ -162,6 +180,7 @@ class TestRenderMonthlyViewUseCase:
 
         # Arrange
         use_case = RenderMonthlyViewUseCase(
+            config=mock_config,
             renderer=mock_renderer,
             monthly_view_builder=mock_monthly_view_builder,
             daily_view_builder=mock_daily_view_builder,
@@ -192,6 +211,7 @@ class TestRenderMonthlyViewUseCase:
         mock_monthly_view_builder: Mock,
         mock_daily_view_builder: Mock,
         sample_events: list,
+        mock_config: Mock,
     ) -> None:
         """RenderMonthlyViewUseCase should use 800x480 for e-paper display."""
         from src.kalendar.application.usecases.render_monthly_view import (
@@ -200,6 +220,7 @@ class TestRenderMonthlyViewUseCase:
 
         # Arrange
         use_case = RenderMonthlyViewUseCase(
+            config=mock_config,
             renderer=mock_renderer,
             monthly_view_builder=mock_monthly_view_builder,
             daily_view_builder=mock_daily_view_builder,
@@ -214,3 +235,44 @@ class TestRenderMonthlyViewUseCase:
         call_args = mock_renderer.render_template.call_args
         assert call_args.kwargs["width"] == 800
         assert call_args.kwargs["height"] == 480
+    def test_monthly_view_builder_receives_config(
+        self,
+        mock_renderer: Mock,
+        mock_monthly_view_builder: Mock,
+        mock_daily_view_builder: Mock,
+        sample_events: list,
+        mock_config: Mock,
+    ) -> None:
+        """MonthlyViewBuilder.build() should receive config parameter, not today."""
+        from src.kalendar.application.usecases.render_monthly_view import (
+            RenderMonthlyViewUseCase,
+        )
+
+        # Arrange
+        use_case = RenderMonthlyViewUseCase(
+            renderer=mock_renderer,
+            monthly_view_builder=mock_monthly_view_builder,
+            daily_view_builder=mock_daily_view_builder,
+            config=mock_config,
+        )
+
+        # Act
+        today = date(2025, 11, 16)
+        result = use_case.execute(
+            events=sample_events,
+            year=2025,
+            month=11,
+            today=today,
+        )
+
+        # Assert - monthly_view_builder.build should be called with config
+        mock_monthly_view_builder.build.assert_called_once()
+        call_args = mock_monthly_view_builder.build.call_args
+
+        # Should receive: year, month, events, config
+        assert call_args.kwargs["year"] == 2025
+        assert call_args.kwargs["month"] == 11
+        assert call_args.kwargs["events"] == sample_events
+        assert call_args.kwargs["config"] == mock_config
+        # Should NOT receive 'today' as a parameter
+        assert "today" not in call_args.kwargs

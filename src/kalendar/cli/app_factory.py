@@ -87,6 +87,7 @@ class Application:
                 renderer=self.deps.renderer,
                 monthly_view_builder=self.monthly_view_builder,
                 daily_view_builder=self.daily_view_builder,
+                config=self.deps.config,
             )
         return self._render_monthly_view_use_case
 

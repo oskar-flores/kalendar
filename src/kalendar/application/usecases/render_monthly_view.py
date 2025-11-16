@@ -11,6 +11,7 @@ import logging
 from PIL import Image
 
 from kalendar.domain.interfaces.IImageRenderer import IImageRenderer
+from kalendar.domain.models.config import DisplayConfiguration
 from kalendar.domain.models.event import CalendarEvent
 from kalendar.domain.services.monthly_view_builder import MonthlyViewBuilder
 from kalendar.domain.services.daily_view_builder import DailyViewBuilder
@@ -46,6 +47,7 @@ class RenderMonthlyViewUseCase:
         renderer: IImageRenderer,
         monthly_view_builder: MonthlyViewBuilder,
         daily_view_builder: DailyViewBuilder,
+        config: DisplayConfiguration,
         template_directory: Path | None = None,
     ) -> None:
         """
@@ -55,11 +57,13 @@ class RenderMonthlyViewUseCase:
             renderer: Image renderer implementation
             monthly_view_builder: Builder for monthly calendar grid
             daily_view_builder: Builder for daily events view
+            config: Display configuration
             template_directory: Optional path to templates (defaults to package templates)
         """
         self._renderer = renderer
         self._monthly_view_builder = monthly_view_builder
         self._daily_view_builder = daily_view_builder
+        self._config = config
 
         # Set template directory
         if template_directory is None:
@@ -97,7 +101,7 @@ class RenderMonthlyViewUseCase:
 
         # Build monthly view
         monthly_view = self._monthly_view_builder.build(
-            year=year, month=month, events=events, today=today
+            year=year, month=month, events=events, config=self._config
         )
 
         # Build daily view for today
