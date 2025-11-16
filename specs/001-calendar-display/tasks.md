@@ -210,19 +210,19 @@
 
 ### Tests for Display Driver (TDD - RED phase)
 
-- [ ] T070 [P] Contract test for IDisplayDriver interface in tests/contract/test_display_driver_contract.py
-- [ ] T071 [P] Integration test for Waveshare driver (hardware-dependent) in tests/integration/display/test_waveshare_integration.py
+- [X] T070 [P] Contract test for IDisplayDriver interface in tests/contract/test_display_driver_contract.py
+- [X] T071 [P] Integration test for Waveshare driver (hardware-dependent) in tests/integration/display/test_waveshare_integration.py
 
 ### Implementation for Display Driver (GREEN phase)
 
-- [ ] T072 [P] Implement WaveshareEPD75BDriver in src/kalendar/infrastructure/display/waveshare_driver.py (initialize, display with black/red buffers, sleep, get_capabilities)
-- [ ] T073 [P] Implement MockDisplayDriver for testing in tests/fixtures/mock_display_driver.py (saves to file instead of hardware)
-- [ ] T074 [P] Implement SimulatorDisplayDriver for development in src/kalendar/infrastructure/display/simulator_driver.py (shows in window or saves to output/ directory)
+- [X] T072 [P] Implement WaveshareEPD75BDriver in src/kalendar/infrastructure/display/waveshare_driver.py (initialize, display with black/red buffers, sleep, get_capabilities)
+- [X] T073 [P] Implement MockDisplayDriver for testing in tests/fixtures/mock_display_driver.py (saves to file instead of hardware)
+- [X] T074 [P] Implement SimulatorDisplayDriver for development in src/kalendar/infrastructure/display/simulator_driver.py (shows in window or saves to output/ directory)
 
 ### Display Update Use Case
 
-- [ ] T075 Write tests for UpdateDisplayUseCase in tests/unit/application/usecases/test_update_display.py
-- [ ] T076 Implement UpdateDisplayUseCase in src/kalendar/application/usecases/update_display.py (initialize display, convert image to black/red buffers, update display, handle hardware errors per FR-014)
+- [X] T075 Write tests for UpdateDisplayUseCase in tests/unit/application/usecases/test_update_display.py
+- [X] T076 Implement UpdateDisplayUseCase in src/kalendar/application/usecases/update_display.py (initialize display, convert image to black/red buffers, update display, handle hardware errors per FR-014)
 
 **Checkpoint**: Display integration complete - can render to actual e-paper hardware
 
@@ -234,21 +234,21 @@
 
 ### Tests for CLI (TDD - RED phase)
 
-- [ ] T077 [P] Integration test for CLI commands in tests/integration/cli/test_cli_commands.py
+- [X] T077 [P] Integration test for CLI commands in tests/integration/cli/test_cli_commands.py
 
 ### Implementation for CLI (GREEN phase)
 
-- [ ] T078 [P] Create CLI main entry point in src/kalendar/cli/main.py (using argparse or click)
-- [ ] T079 [P] Implement `refresh` command in src/kalendar/cli/commands/refresh.py (manual refresh, --simulator flag)
-- [ ] T080 [P] Implement `test-display` command in src/kalendar/cli/commands/test_display.py (hardware test with pattern)
-- [ ] T081 [P] Implement `test-sync` command in src/kalendar/cli/commands/test_sync.py (test calendar connectivity)
-- [ ] T082 [P] Implement `auth` command in src/kalendar/cli/commands/auth.py (Google OAuth flow helper)
-- [ ] T083 [P] Implement `discover-caldav` command in src/kalendar/cli/commands/discover_caldav.py (find iCloud calendar URLs)
+- [X] T078 [P] Create CLI main entry point in src/kalendar/cli/main.py (using argparse or click)
+- [X] T079 [P] Implement `refresh` command in src/kalendar/cli/commands/refresh.py (manual refresh, --simulator flag)
+- [X] T080 [P] Implement `test-display` command in src/kalendar/cli/commands/test_display.py (hardware test with pattern)
+- [X] T081 [P] Implement `test-sync` command in src/kalendar/cli/commands/test_sync.py (test calendar connectivity)
+- [X] T082 [P] Implement `auth` command in src/kalendar/cli/commands/auth.py (Google OAuth flow helper)
+- [X] T083 [P] Implement `discover-caldav` command in src/kalendar/cli/commands/discover_caldav.py (find iCloud calendar URLs)
 
 ### Dependency Injection & Application Wiring
 
-- [ ] T084 Create dependency injection container in src/kalendar/cli/dependencies.py (wire together all infrastructure implementations based on config)
-- [ ] T085 Create application factory in src/kalendar/cli/app_factory.py (create_application with all use cases)
+- [X] T084 Create dependency injection container in src/kalendar/cli/dependencies.py (wire together all infrastructure implementations based on config)
+- [X] T085 Create application factory in src/kalendar/cli/app_factory.py (create_application with all use cases)
 
 **Checkpoint**: CLI complete - can manually trigger all operations
 
