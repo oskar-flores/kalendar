@@ -55,7 +55,8 @@ sudo apt install -y \
   libfribidi-dev \
   libxcb1-dev \
   python3-lgpio \
-  libgpiod2
+  libgpiod3 \
+  swig
 
 # Add user to GPIO and SPI groups (required for hardware access)
 sudo usermod -a -G gpio,spi $USER

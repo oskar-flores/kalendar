@@ -118,44 +118,16 @@ class WaveshareEPD75BDriver(IDisplayDriver):
             )
 
         try:
-            # Convert PIL images to byte arrays for Waveshare library
-            black_buffer = self._image_to_buffer(black_image)
-            red_buffer = self._image_to_buffer(red_image)
+            # Use Waveshare library's getbuffer() method to convert images
+            # This ensures proper buffer format and mutability
+            black_buffer = self._epd.getbuffer(black_image)
+            red_buffer = self._epd.getbuffer(red_image)
 
             # Send to display
-            # Note: Waveshare library uses inverted logic (0=white, 1=black)
             self._epd.display(black_buffer, red_buffer)
 
         except Exception as e:
             raise DisplayHardwareError(f"Failed to update display: {e}") from e
-
-    def _image_to_buffer(self, image: Image.Image) -> bytes:
-        """Convert PIL Image to byte array for Waveshare library.
-
-        Args:
-            image: PIL Image in mode '1'
-
-        Returns:
-            Byte array suitable for Waveshare library
-        """
-        # Convert image to bytes
-        # Waveshare expects inverted: 0xFF (white) and 0x00 (black)
-        pixels = image.load()
-        width, height = image.size
-
-        buffer = []
-        for y in range(height):
-            for x in range(0, width, 8):
-                byte = 0
-                for bit in range(8):
-                    if x + bit < width:
-                        # Invert: PIL 0=black, 255=white
-                        # Waveshare: 0=white, 1=black
-                        if pixels[x + bit, y] == 0:
-                            byte |= (1 << (7 - bit))
-                buffer.append(byte)
-
-        return bytes(buffer)
 
     def clear(self) -> None:
         """Clear display to all white.
