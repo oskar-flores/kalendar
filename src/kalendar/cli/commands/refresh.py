@@ -67,9 +67,10 @@ def refresh_command(args) -> int:
 
         now = datetime.now()
         calendar_image = app.render_monthly_view.execute(
+            events=sync_result.events,
             year=now.year,
             month=now.month,
-            events=sync_result.events,
+            today=now.date(),
         )
 
         print(f"\nRendered calendar image:")
