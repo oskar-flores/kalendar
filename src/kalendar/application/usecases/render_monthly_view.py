@@ -10,10 +10,10 @@ from pathlib import Path
 import logging
 from PIL import Image
 
-from src.kalendar.domain.interfaces.IImageRenderer import IImageRenderer
-from src.kalendar.domain.models.event import CalendarEvent
-from src.kalendar.domain.services.monthly_view_builder import MonthlyViewBuilder
-from src.kalendar.domain.services.daily_view_builder import DailyViewBuilder
+from kalendar.domain.interfaces.IImageRenderer import IImageRenderer
+from kalendar.domain.models.event import CalendarEvent
+from kalendar.domain.services.monthly_view_builder import MonthlyViewBuilder
+from kalendar.domain.services.daily_view_builder import DailyViewBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class RenderMonthlyViewUseCase:
         # Set template directory
         if template_directory is None:
             # Default to package templates
-            from src.kalendar.presentation import templates
+            from kalendar.presentation import templates
 
             template_directory = Path(templates.__file__).parent
 

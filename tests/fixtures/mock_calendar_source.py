@@ -7,7 +7,7 @@ Returns fixture events that cover various test scenarios.
 
 from datetime import datetime, date, timezone, timedelta
 from typing import List, Optional
-from src.kalendar.domain.interfaces.ICalendarSource import (
+from kalendar.domain.interfaces.ICalendarSource import (
     ICalendarSource,
     CalendarEventDTO,
     CalendarSourceConfig,

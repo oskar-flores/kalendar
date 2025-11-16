@@ -156,3 +156,41 @@ class TestCLICommands:
 
         # May fail due to missing credentials, but should not crash
         assert "error" in result.stdout.lower() or "success" in result.stdout.lower() or "refresh" in result.stdout.lower()
+
+    def test_test_sync_command_with_no_sources(self, cli_path, tmp_path):
+        """Test-sync command with no calendar sources configured."""
+        # Create a test config file with no sources
+        config_content = """
+refresh_hour: 6
+timezone: America/New_York
+calendar_sources: []
+
+cache:
+  type: file
+  file_cache_dir: {cache_dir}
+
+display:
+  driver: simulator
+"""
+        config_path = tmp_path / "test_config.yaml"
+        config_path.write_text(config_content.format(cache_dir=str(tmp_path / "cache")))
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(cli_path),
+                "--config",
+                str(config_path),
+                "test-sync",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+
+        # Should succeed with exit code 0 (no sources to sync is not a failure)
+        assert result.returncode == 0, f"Command failed with: {result.stderr}\n{result.stdout}"
+
+        # Output should contain success message
+        assert "Testing 0 calendar source" in result.stdout, f"Expected 0 sources in output: {result.stdout}"
+        assert "All calendar sources synced successfully!" in result.stdout, f"Expected success message in output: {result.stdout}"

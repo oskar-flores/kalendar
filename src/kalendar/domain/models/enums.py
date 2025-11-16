@@ -8,6 +8,7 @@ class SourceType(Enum):
 
     GOOGLE = "google"
     CALDAV = "caldav"
+    MOCK = "mock"  # For testing
 
 
 class SyncStatus(Enum):

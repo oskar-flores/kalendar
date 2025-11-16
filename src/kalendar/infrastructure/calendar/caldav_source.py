@@ -14,7 +14,7 @@ from caldav import DAVClient, Calendar
 from icalendar import Calendar as ICalendar, Event
 from recurring_ical_events import of
 
-from src.kalendar.domain.interfaces.ICalendarSource import (
+from kalendar.domain.interfaces.ICalendarSource import (
     ICalendarSource,
     CalendarEventDTO,
     CalendarSourceConfig,

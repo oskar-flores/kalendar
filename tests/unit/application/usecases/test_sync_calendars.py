@@ -10,12 +10,12 @@ from datetime import date, datetime, timezone, timedelta
 from typing import List
 from unittest.mock import Mock, MagicMock
 
-from src.kalendar.domain.interfaces.ICalendarSource import (
+from kalendar.domain.interfaces.ICalendarSource import (
     CalendarEventDTO,
     CalendarSourceError,
     NetworkError,
 )
-from src.kalendar.domain.models.source import CalendarSource, SyncStatus
+from kalendar.domain.models.source import CalendarSource, SyncStatus
 
 
 class TestSyncCalendarsUseCase:
@@ -29,6 +29,18 @@ class TestSyncCalendarsUseCase:
         cache.load_events = Mock(return_value=None)
         cache.is_cache_valid = Mock(return_value=False)
         return cache
+
+    @pytest.fixture
+    def mock_config(self) -> Mock:
+        """Create mock config."""
+        config = Mock()
+        config.get_enabled_sources = Mock(return_value=[])
+        return config
+
+    @pytest.fixture
+    def mock_event_aggregator(self) -> Mock:
+        """Create mock event aggregator."""
+        return Mock()
 
     @pytest.fixture
     def mock_calendar_source(self) -> Mock:
@@ -71,14 +83,14 @@ class TestSyncCalendarsUseCase:
         return [mock_calendar_source]
 
     def test_sync_calendars_fetches_from_all_sources(
-        self, mock_cache: Mock, calendar_sources: List[Mock]
+        self, mock_config: Mock, mock_cache: Mock, mock_event_aggregator: Mock, calendar_sources: List[Mock]
     ) -> None:
         """SyncCalendarsUseCase should fetch events from all calendar sources."""
         # This test will pass once SyncCalendarsUseCase is implemented
-        from src.kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
+        from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 
         # Arrange
-        use_case = SyncCalendarsUseCase(cache=mock_cache)
+        use_case = SyncCalendarsUseCase(config=mock_config, cache=mock_cache, event_aggregator=mock_event_aggregator)
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -90,13 +102,13 @@ class TestSyncCalendarsUseCase:
         assert calendar_sources[0].fetch_events.call_args[0] == (start, end)
 
     def test_sync_calendars_caches_fetched_events(
-        self, mock_cache: Mock, calendar_sources: List[Mock]
+        self, mock_config: Mock, mock_cache: Mock, mock_event_aggregator: Mock, calendar_sources: List[Mock]
     ) -> None:
         """SyncCalendarsUseCase should save fetched events to cache."""
-        from src.kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
+        from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 
         # Arrange
-        use_case = SyncCalendarsUseCase(cache=mock_cache)
+        use_case = SyncCalendarsUseCase(config=mock_config, cache=mock_cache, event_aggregator=mock_event_aggregator)
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -107,10 +119,10 @@ class TestSyncCalendarsUseCase:
         assert mock_cache.save_events.called
 
     def test_sync_calendars_aggregates_events_from_multiple_sources(
-        self, mock_cache: Mock
+        self, mock_config: Mock, mock_cache: Mock, mock_event_aggregator: Mock
     ) -> None:
         """SyncCalendarsUseCase should aggregate events from multiple sources."""
-        from src.kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
+        from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 
         # Arrange
         source1 = Mock()
@@ -143,7 +155,7 @@ class TestSyncCalendarsUseCase:
             ]
         )
 
-        use_case = SyncCalendarsUseCase(cache=mock_cache)
+        use_case = SyncCalendarsUseCase(config=mock_config, cache=mock_cache, event_aggregator=mock_event_aggregator)
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -157,7 +169,7 @@ class TestSyncCalendarsUseCase:
         self, mock_cache: Mock
     ) -> None:
         """SyncCalendarsUseCase should continue if one source fails."""
-        from src.kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
+        from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 
         # Arrange
         failing_source = Mock()
@@ -179,7 +191,7 @@ class TestSyncCalendarsUseCase:
             ]
         )
 
-        use_case = SyncCalendarsUseCase(cache=mock_cache)
+        use_case = SyncCalendarsUseCase(config=Mock(), cache=mock_cache, event_aggregator=Mock())
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -192,7 +204,7 @@ class TestSyncCalendarsUseCase:
 
     def test_sync_calendars_deduplicates_events(self, mock_cache: Mock) -> None:
         """SyncCalendarsUseCase should deduplicate events with same title and time."""
-        from src.kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
+        from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 
         # Arrange
         same_time = datetime.now(timezone.utc)
@@ -228,7 +240,7 @@ class TestSyncCalendarsUseCase:
             ]
         )
 
-        use_case = SyncCalendarsUseCase(cache=mock_cache)
+        use_case = SyncCalendarsUseCase(config=Mock(), cache=mock_cache, event_aggregator=Mock())
         start = date.today()
         end = start + timedelta(days=30)
 
@@ -242,10 +254,10 @@ class TestSyncCalendarsUseCase:
         self, mock_cache: Mock, calendar_sources: List[Mock]
     ) -> None:
         """SyncCalendarsUseCase should return metadata about sync operation."""
-        from src.kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
+        from kalendar.application.usecases.sync_calendars import SyncCalendarsUseCase
 
         # Arrange
-        use_case = SyncCalendarsUseCase(cache=mock_cache)
+        use_case = SyncCalendarsUseCase(config=Mock(), cache=mock_cache, event_aggregator=Mock())
         start = date.today()
         end = start + timedelta(days=30)
 

@@ -16,7 +16,7 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-from src.kalendar.domain.interfaces.ICalendarSource import (
+from kalendar.domain.interfaces.ICalendarSource import (
     ICalendarSource,
     CalendarEventDTO,
     CalendarSourceConfig,

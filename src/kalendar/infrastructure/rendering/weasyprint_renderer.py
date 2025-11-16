@@ -15,7 +15,7 @@ from weasyprint import HTML, CSS
 import jinja2
 from jinja2 import Environment, FileSystemLoader
 
-from src.kalendar.domain.interfaces.IImageRenderer import (
+from kalendar.domain.interfaces.IImageRenderer import (
     IImageRenderer,
     RenderError,
     TemplateNotFoundError,

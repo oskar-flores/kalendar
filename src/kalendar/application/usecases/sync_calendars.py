@@ -10,15 +10,25 @@ from datetime import date, datetime, timezone
 from typing import List, Dict, Any, Optional
 import logging
 
-from src.kalendar.domain.interfaces.ICalendarSource import (
+from kalendar.domain.interfaces.ICalendarSource import (
     ICalendarSource,
     CalendarEventDTO,
     CalendarSourceError,
 )
-from src.kalendar.domain.interfaces.ICache import ICache
-from src.kalendar.domain.models.event import CalendarEvent
+from kalendar.domain.interfaces.ICache import ICache
+from kalendar.domain.models.event import CalendarEvent
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class SourceSyncResult:
+    """Result of syncing a single calendar source."""
+
+    status: Any  # SyncStatus enum
+    events_fetched: int
+    duration_seconds: float
+    error_message: Optional[str] = None
 
 
 @dataclass
@@ -30,6 +40,7 @@ class SyncResult:
     sources_synced: int
     total_sources: int
     errors: List[Dict[str, str]]  # List of {"source_id": str, "error": str}
+    source_results: Dict[str, SourceSyncResult]  # Per-source sync results
 
 
 class SyncCalendarsUseCase:
@@ -49,34 +60,49 @@ class SyncCalendarsUseCase:
         - Use cached data as fallback if available
     """
 
-    def __init__(self, cache: ICache) -> None:
+    def __init__(self, config: Any, cache: ICache, event_aggregator: Any) -> None:
         """
         Initialize SyncCalendarsUseCase.
 
         Args:
+            config: Configuration with calendar sources
             cache: Cache implementation for storing events
+            event_aggregator: Event aggregator service (unused for now)
         """
+        self._config = config
         self._cache = cache
+        self._event_aggregator = event_aggregator
 
     def execute(
         self,
-        calendar_sources: List[ICalendarSource],
-        start_date: date,
-        end_date: date,
+        calendar_sources: Optional[List[ICalendarSource]] = None,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
     ) -> SyncResult:
         """
         Synchronize calendar events from multiple sources.
 
         Args:
-            calendar_sources: List of calendar sources to sync
-            start_date: Start of date range to fetch
-            end_date: End of date range to fetch
+            calendar_sources: List of calendar sources to sync (defaults to enabled sources from config)
+            start_date: Start of date range to fetch (defaults to today)
+            end_date: End of date range to fetch (defaults to 30 days from today)
 
         Returns:
             SyncResult with aggregated events and metadata
         """
+        from datetime import timedelta
+
+        # Use defaults if not provided
+        if calendar_sources is None:
+            calendar_sources = self._config.get_enabled_sources()
+        if start_date is None:
+            start_date = date.today()
+        if end_date is None:
+            end_date = start_date + timedelta(days=30)
+
         all_events: List[CalendarEventDTO] = []
         errors: List[Dict[str, str]] = []
+        source_results: Dict[str, SourceSyncResult] = {}
         sources_synced = 0
 
         logger.info(
@@ -89,20 +115,43 @@ class SyncCalendarsUseCase:
             source_info = source.get_source_info()
             source_id = source_info["source_id"]
 
+            import time
+            start_time = time.time()
+
             try:
                 # Fetch events from this source
                 events = source.fetch_events(start_date, end_date)
                 all_events.extend(events)
                 sources_synced += 1
 
+                duration = time.time() - start_time
+
                 # Cache events for this source
                 self._cache_source_events(source_id, events)
 
                 logger.info(f"Synced {len(events)} events from {source_id}")
 
+                # Create mock SyncStatus for success
+                from kalendar.domain.models.source import SyncStatus
+                source_results[source_id] = SourceSyncResult(
+                    status=SyncStatus.SUCCESS,
+                    events_fetched=len(events),
+                    duration_seconds=duration,
+                    error_message=None,
+                )
+
             except CalendarSourceError as e:
+                duration = time.time() - start_time
                 logger.error(f"Failed to sync {source_id}: {e}")
                 errors.append({"source_id": source_id, "error": str(e)})
+
+                from kalendar.domain.models.source import SyncStatus
+                source_results[source_id] = SourceSyncResult(
+                    status=SyncStatus.FAILED,
+                    events_fetched=0,
+                    duration_seconds=duration,
+                    error_message=str(e),
+                )
 
                 # Try to use cached data as fallback
                 cached_events = self._load_cached_events(source_id)
@@ -111,8 +160,17 @@ class SyncCalendarsUseCase:
                     logger.warning(f"Using {len(cached_events)} cached events for {source_id}")
 
             except Exception as e:
+                duration = time.time() - start_time
                 logger.error(f"Unexpected error syncing {source_id}: {e}")
                 errors.append({"source_id": source_id, "error": f"Unexpected error: {e}"})
+
+                from kalendar.domain.models.source import SyncStatus
+                source_results[source_id] = SourceSyncResult(
+                    status=SyncStatus.FAILED,
+                    events_fetched=0,
+                    duration_seconds=duration,
+                    error_message=f"Unexpected error: {e}",
+                )
 
         # Deduplicate events
         deduplicated_events = self._deduplicate_events(all_events)
@@ -131,6 +189,7 @@ class SyncCalendarsUseCase:
             sources_synced=sources_synced,
             total_sources=len(calendar_sources),
             errors=errors,
+            source_results=source_results,
         )
 
     def _cache_source_events(
