@@ -96,9 +96,19 @@ class YAMLConfigLoader:
         Returns:
             DisplayConfiguration object
         """
+        # Load credentials from separate file if specified
+        credentials = {}
+        if "credentials_file" in data:
+            credentials_path = data["credentials_file"]
+            credentials = self.load_credentials(credentials_path)
+
         # Parse calendar sources
         sources: list[CalendarSource] = []
         for src_data in data.get("calendar_sources", []):
+            # Get credentials for this source type
+            source_type = src_data["source_type"]
+            source_credentials = credentials.get(source_type) if credentials else None
+
             source = CalendarSource(
                 id=src_data["id"],
                 name=src_data["name"],
@@ -106,6 +116,7 @@ class YAMLConfigLoader:
                 calendar_id=src_data["calendar_id"],
                 enabled=src_data.get("enabled", True),
                 color=src_data.get("color"),
+                credentials=source_credentials,
             )
             sources.append(source)
 
