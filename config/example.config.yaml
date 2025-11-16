@@ -1,0 +1,172 @@
+# ============================================================
+# Kalendar E-Paper Display Configuration
+# ============================================================
+#
+# Copy this file to config.yaml and customize for your setup
+#
+# Documentation: See specs/001-calendar-display/quickstart.md
+#
+# ============================================================
+
+# ============================================================
+# Daily Refresh Settings
+# ============================================================
+
+# Hour of day to refresh calendar data (0-23)
+# 0 = midnight, 12 = noon, 23 = 11 PM
+# Validation: Must be between 0 and 23
+refresh_hour: 0
+
+# IANA timezone string for display and scheduling
+# Examples: "America/New_York", "Europe/London", "Asia/Tokyo", "UTC"
+# Find your timezone: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+# Validation: Must be a valid IANA timezone
+timezone: "America/New_York"
+
+# ============================================================
+# Calendar Display Settings
+# ============================================================
+
+# Week start day (0-6)
+# 0 = Monday, 1 = Tuesday, ..., 6 = Sunday
+# North America typically uses 6 (Sunday), Europe uses 0 (Monday)
+# Validation: Must be between 0 and 6
+week_start_day: 0
+
+# ============================================================
+# Calendar Sources
+# ============================================================
+
+# List of calendar sources to display
+# Supported types: "google" (Google Calendar), "caldav" (iCloud, Nextcloud, etc.)
+# Validation: At least one source must be enabled
+
+calendar_sources:
+  # ------------------------------------------------------------
+  # Google Calendar - Primary Calendar
+  # ------------------------------------------------------------
+  - id: "google-primary"
+    name: "My Google Calendar"
+    source_type: "google"
+    calendar_id: "primary"  # Use "primary" for your main Google calendar
+    enabled: true
+    color: "#4285F4"  # Optional: Google blue (not used in 3-color display)
+
+  # ------------------------------------------------------------
+  # Google Calendar - Specific Calendar (commented example)
+  # ------------------------------------------------------------
+  # - id: "google-family"
+  #   name: "Family Calendar"
+  #   source_type: "google"
+  #   calendar_id: "family@group.calendar.google.com"
+  #   enabled: true
+  #   color: "#0B8043"  # Optional: Google green
+
+  # ------------------------------------------------------------
+  # Google Calendar - Work Calendar (commented example)
+  # ------------------------------------------------------------
+  # - id: "google-work"
+  #   name: "Work Calendar"
+  #   source_type: "google"
+  #   calendar_id: "work@company.com"
+  #   enabled: false  # Disabled by default
+  #   color: "#F4B400"  # Optional: Google yellow
+
+  # ------------------------------------------------------------
+  # Apple iCloud Calendar via CalDAV (commented example)
+  # ------------------------------------------------------------
+  # Setup:
+  #   1. Generate app-specific password at appleid.apple.com
+  #   2. Run: uv run kalendar discover-caldav --username your@email.com --password xxxx-xxxx-xxxx-xxxx
+  #   3. Copy the calendar URL from the output
+  #
+  # - id: "icloud-family"
+  #   name: "iCloud Family"
+  #   source_type: "caldav"
+  #   calendar_id: "https://caldav.icloud.com/XXXXXXXXX/calendars/YYYYYYY/"
+  #   enabled: true
+  #   color: "#FF9500"  # Optional: iOS orange
+
+  # ------------------------------------------------------------
+  # Nextcloud Calendar via CalDAV (commented example)
+  # ------------------------------------------------------------
+  # - id: "nextcloud-personal"
+  #   name: "Nextcloud Personal"
+  #   source_type: "caldav"
+  #   calendar_id: "https://cloud.example.com/remote.php/dav/calendars/username/personal/"
+  #   enabled: true
+  #   color: "#0082C9"  # Optional: Nextcloud blue
+
+# ============================================================
+# Display Configuration
+# ============================================================
+
+display:
+  # Maximum number of events to show in "Today's Events" section
+  # If there are more events than this limit, an overflow indicator is shown
+  # Validation: Must be greater than 0
+  # Recommended: 5 (fits well on 7.5" display with monthly view)
+  max_daily_events: 5
+
+  # Display layout/orientation
+  # Options: "horizontal" (landscape, 800x480), "vertical" (portrait, 480x800)
+  # Note: Initial version only supports "horizontal"
+  layout: "horizontal"
+
+# ============================================================
+# Advanced Settings (Optional)
+# ============================================================
+
+# Cache configuration (currently not configurable, shown for documentation)
+# cache:
+#   valid_hours: 24  # Hours before cached data is considered stale
+#   directory: "/var/cache/kalendar"  # Cache storage location
+
+# Logging configuration (currently not configurable, shown for documentation)
+# logging:
+#   level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+#   log_dir: "/var/log/kalendar"  # Log directory (ensure write permissions)
+#   rotation:
+#     max_size_mb: 10
+#     backup_count: 5
+
+# ============================================================
+# Credentials Configuration
+# ============================================================
+
+# Path to credentials file (separate from this config for security)
+# This file should contain:
+#   - Google OAuth tokens (generated via "kalendar auth google")
+#   - CalDAV usernames and app-specific passwords
+#
+# Default: config/credentials.json
+# Permissions: chmod 600 credentials.json (read/write for owner only)
+#
+# Example credentials.json structure:
+# {
+#   "google": {
+#     "token_file": "config/google_token.json",
+#     "credentials_file": "config/google_credentials.json"
+#   },
+#   "caldav": {
+#     "username": "your_apple_id@icloud.com",
+#     "app_password": "xxxx-xxxx-xxxx-xxxx"
+#   }
+# }
+
+credentials_file: "config/credentials.json"
+
+# ============================================================
+# End of Configuration
+# ============================================================
+
+# Next steps:
+# 1. Copy this file: cp config/example.config.yaml config/config.yaml
+# 2. Edit calendar_sources with your calendars
+# 3. Set up credentials:
+#    - Google: uv run kalendar auth google --credentials config/google_credentials.json
+#    - iCloud: uv run kalendar discover-caldav --username you@icloud.com --password xxxx-xxxx-xxxx-xxxx
+# 4. Test: uv run kalendar refresh --config config/config.yaml --simulator
+# 5. View output: open output/calendar_display.png
+#
+# For full setup instructions, see: specs/001-calendar-display/quickstart.md

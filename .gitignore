@@ -1,0 +1,106 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# uv
+.uv/
+uv.lock
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.log
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Credentials and secrets
+config/credentials.json
+config/google_token.json
+config/google_credentials.json
+config/*.token.json
+credentials/
+secrets/
+
+# Configuration (keep examples)
+config/*.yaml
+!config/example.config.yaml
+
+# Cache
+/var/cache/kalendar/
+cache/
+.cache/
+
+# Output files
+output/
+*.png
+*.pdf
+
+# Logs
+*.log
+logs/
+/var/log/kalendar/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+.claude/
+CLAUDE.md
+Claude.md
+html-to-image-research.md
