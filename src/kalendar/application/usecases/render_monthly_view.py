@@ -40,15 +40,19 @@ class RenderMonthlyViewUseCase:
     WIDTH = 800
     HEIGHT = 480
 
-    # Weekday names for header (Spanish, Sunday-first base array)
+    # Weekday names for header (Spanish, Sunday-first base array for rotation)
     WEEKDAY_NAMES_BASE = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
+
+    # Spanish weekday names (Monday-first, matching Python's weekday() indexing)
+    # weekday(): 0=Monday, 1=Tuesday, ..., 6=Sunday
+    WEEKDAY_FULL_NAMES_ES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
     # Spanish month names
     MONTH_NAMES_ES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
                       "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 
-    # Spanish weekday abbreviations for week preview
-    WEEKDAY_ABBREV_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+    # Spanish weekday abbreviations (Monday-first, matching Python's weekday())
+    WEEKDAY_ABBREV_ES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 
     def __init__(
         self,
@@ -141,8 +145,6 @@ class RenderMonthlyViewUseCase:
 
         # Get Spanish month and weekday names
         month_name_es = self.MONTH_NAMES_ES[month - 1]
-        weekday_full_names_es = self.WEEKDAY_NAMES_BASE
-        weekday_abbrev_es = self.WEEKDAY_ABBREV_ES
 
         # Prepare template context
         context = {
@@ -151,8 +153,8 @@ class RenderMonthlyViewUseCase:
             "today": today,
             "weeks": monthly_view.weeks,
             "weekday_names": weekday_names,
-            "weekday_full_names": weekday_full_names_es,
-            "weekday_abbrev": weekday_abbrev_es,
+            "weekday_full_names": self.WEEKDAY_FULL_NAMES_ES,  # Monday-first array
+            "weekday_abbrev": self.WEEKDAY_ABBREV_ES,  # Monday-first array
             "daily_view": daily_view,
             "current_event": current_event,
             "upcoming_days": upcoming_days,

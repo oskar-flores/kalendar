@@ -10,7 +10,7 @@
     <div class="container">
         <!-- LEFT SECTION: Day Hero -->
         <section class="day-hero">
-            <div class="day-of-week">{{ weekday_full_names[today.weekday() if today.weekday() < 6 else 0].upper() if today.weekday() != 6 else weekday_full_names[0].upper() }}</div>
+            <div class="day-of-week">{{ weekday_full_names[today.weekday()].upper() }}</div>
             <div class="day-number">{{ today.strftime('%-d') }}</div>
             <div class="month-year">
                 <div class="month-name">{{ month_name.upper() }}</div>
@@ -49,7 +49,7 @@
                 <div class="week-preview-title">{{ labels.this_week }}</div>
                 {% for day in upcoming_days[:5] %}
                 <div class="week-day-row {% if day.is_today %}week-day-today{% endif %}">
-                    <div class="week-day-label">{{ weekday_abbrev[day.date.weekday() if day.date.weekday() < 6 else 0] if day.date.weekday() != 6 else weekday_abbrev[0] }} {{ day.date.strftime('%-d') }}</div>
+                    <div class="week-day-label">{{ weekday_abbrev[day.date.weekday()] }} {{ day.date.strftime('%-d') }}</div>
                     <div class="week-day-count">{{ day.event_count if day.event_count > 0 else '' }}</div>
                     {% if day.events %}
                     <div class="week-day-preview">{{ day.events[0].title[:20] }}{% if day.events[0].title|length > 20 %}...{% endif %}</div>
@@ -89,7 +89,7 @@
                 {% for day in upcoming_days[1:4] %}
                     {% if day.events %}
                     <div class="events-group">
-                        <div class="events-group-label">{{ weekday_full_names[day.date.weekday() if day.date.weekday() < 6 else 0].upper() if day.date.weekday() != 6 else weekday_full_names[0].upper() }}</div>
+                        <div class="events-group-label">{{ weekday_full_names[day.date.weekday()].upper() }}</div>
                         {% for event in day.events[:2] %}
                         <div class="event-item event-upcoming">
                             <div class="event-time">
