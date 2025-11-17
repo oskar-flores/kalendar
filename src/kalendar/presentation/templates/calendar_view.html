@@ -47,7 +47,7 @@
             <!-- Week Preview -->
             <div class="week-preview">
                 <div class="week-preview-title">{{ labels.this_week }}</div>
-                {% for day in upcoming_days[:5] %}
+                {% for day in upcoming_days[:7] %}
                 <div class="week-day-row {% if day.is_today %}week-day-today{% endif %}">
                     <div class="week-day-label">{{ weekday_abbrev[day.date.weekday()] }} {{ day.date.strftime('%-d') }}</div>
                     <div class="week-day-count">{{ day.event_count if day.event_count > 0 else '' }}</div>

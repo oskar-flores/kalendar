@@ -94,8 +94,8 @@ body {
 .month-overview {
     width: 320px;
     height: 480px;
-    background: #1a1a1a;
-    color: white;
+    background: white;
+    color: black;
     display: flex;
     flex-direction: column;
     padding: 15px;
@@ -117,7 +117,7 @@ body {
     font-size: 11px;
     font-weight: bold;
     text-align: center;
-    color: #888888;
+    color: #666666;
 }
 
 .mini-grid {
@@ -130,8 +130,8 @@ body {
     font-size: 11px;
     text-align: center;
     padding: 6px 4px;
-    color: white;
-    background: #2a2a2a;
+    color: black;
+    background: #e0e0e0;
     border-radius: 2px;
 }
 
@@ -142,7 +142,7 @@ body {
 }
 
 .mini-day-other {
-    color: #555555;
+    color: #999999;
     background: transparent;
 }
 
@@ -158,7 +158,7 @@ body {
     transform: translateX(-50%);
     width: 3px;
     height: 3px;
-    background: #888888;
+    background: #666666;
     border-radius: 50%;
 }
 
@@ -176,21 +176,21 @@ body {
     font-size: 11px;
     font-weight: bold;
     letter-spacing: 1px;
-    color: #666666;
+    color: #333333;
     margin-bottom: 8px;
     padding-bottom: 5px;
-    border-bottom: 1px solid #333333;
+    border-bottom: 1px solid #cccccc;
 }
 
 .week-day-row {
     display: flex;
     align-items: center;
     padding: 5px 0;
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .week-day-today {
-    background: #2a2a2a;
+    background: #f0f0f0;
     padding: 5px;
     border-left: 3px solid red;
 }
@@ -198,7 +198,7 @@ body {
 .week-day-label {
     font-size: 11px;
     font-weight: bold;
-    color: white;
+    color: black;
     min-width: 45px;
 }
 
@@ -212,7 +212,7 @@ body {
 
 .week-day-preview {
     font-size: 11px;
-    color: #999999;
+    color: #666666;
     flex: 1;
     margin-left: 8px;
     white-space: nowrap;
@@ -224,8 +224,8 @@ body {
 .events-detail {
     width: 200px;
     height: 480px;
-    background: white;
-    color: black;
+    background: black;
+    color: white;
     display: flex;
     flex-direction: column;
     padding: 15px;
@@ -235,7 +235,7 @@ body {
 .events-title {
     font-size: 13px;
     font-weight: bold;
-    color: black;
+    color: white;
     margin-bottom: 10px;
     padding-bottom: 8px;
     border-bottom: 2px solid red;
@@ -256,7 +256,7 @@ body {
     font-size: 10px;
     font-weight: bold;
     letter-spacing: 1px;
-    color: #666666;
+    color: #999999;
     margin-bottom: 5px;
 }
 
@@ -265,7 +265,7 @@ body {
     display: flex;
     gap: 6px;
     padding: 5px 0 5px 6px;
-    border-left: 2px solid #cccccc;
+    border-left: 2px solid #444444;
     margin-bottom: 4px;
 }
 
@@ -285,7 +285,7 @@ body {
 .event-time {
     font-size: 10px;
     font-weight: bold;
-    color: black;
+    color: white;
     min-width: 35px;
 }
 
@@ -296,7 +296,7 @@ body {
 .event-title {
     font-size: 12px;
     font-weight: 600;
-    color: black;
+    color: white;
     line-height: 1.3;
 }
 
@@ -311,7 +311,7 @@ body {
 .sync-info {
     margin-top: auto;
     padding-top: 8px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid #333333;
     font-size: 8px;
     color: #999999;
     text-align: center;
