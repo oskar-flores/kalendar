@@ -11,6 +11,7 @@ license = { text = "MIT" }
 
 dependencies = [
     "weasyprint>=62.3",
+    "pdf2image>=1.17.0",
     "jinja2>=3.1.0",
     "google-api-python-client>=2.0.0",
     "google-auth-httplib2>=0.2.0",

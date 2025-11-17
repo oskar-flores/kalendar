@@ -12,6 +12,7 @@ import logging
 
 from PIL import Image
 from weasyprint import HTML, CSS
+from pdf2image import convert_from_bytes
 import jinja2
 from jinja2 import Environment, FileSystemLoader
 
@@ -101,15 +102,23 @@ class WeasyPrintRenderer(IImageRenderer):
             else:
                 full_css = viewport_css
 
-            # Render HTML with WeasyPrint
+            # Render HTML with WeasyPrint to PDF
             html = HTML(string=html_content)
             css_obj = CSS(string=full_css)
 
-            # Render to PNG in memory
-            png_bytes = html.write_png(stylesheets=[css_obj])
+            # Render to PDF in memory (WeasyPrint 53+)
+            pdf_bytes = html.write_pdf(stylesheets=[css_obj])
 
-            # Convert to PIL Image
-            image = Image.open(BytesIO(png_bytes))
+            # Convert PDF to PNG using pdf2image (Poppler-based)
+            images = convert_from_bytes(
+                pdf_bytes,
+                dpi=96,  # Standard web DPI
+                size=(width, height),  # Target size
+                fmt='png'
+            )
+
+            # Get the first (and only) page
+            image = images[0]
 
             # Ensure RGB mode (WeasyPrint outputs RGBA, we need RGB for post-processing)
             if image.mode == "RGBA":
