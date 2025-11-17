@@ -40,8 +40,15 @@ class RenderMonthlyViewUseCase:
     WIDTH = 800
     HEIGHT = 480
 
-    # Weekday names for header
-    WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    # Weekday names for header (Spanish, Sunday-first base array)
+    WEEKDAY_NAMES_BASE = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
+
+    # Spanish month names
+    MONTH_NAMES_ES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+
+    # Spanish weekday abbreviations for week preview
+    WEEKDAY_ABBREV_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
 
     def __init__(
         self,
@@ -118,17 +125,39 @@ class RenderMonthlyViewUseCase:
         # Build upcoming days view (today + next 6 days for week preview)
         upcoming_days = self._build_upcoming_days(today, events, monthly_view)
 
+        # Rotate weekday names based on week_start_day configuration
+        # week_start_day: 0=Monday, 1=Tuesday, ..., 6=Sunday
+        weekday_names = self._get_rotated_weekday_names(self._config.week_start_day)
+
+        # Spanish translations
+        spanish_labels = {
+            "today_and_upcoming": "HOY Y PRÓXIMOS",
+            "today": "HOY",
+            "this_week": "ESTA SEMANA",
+            "all_day": "Todo el día",
+            "synced": "Sincronizado:",
+            "more": "más",
+        }
+
+        # Get Spanish month and weekday names
+        month_name_es = self.MONTH_NAMES_ES[month - 1]
+        weekday_full_names_es = self.WEEKDAY_NAMES_BASE
+        weekday_abbrev_es = self.WEEKDAY_ABBREV_ES
+
         # Prepare template context
         context = {
-            "month_name": monthly_view.get_month_name(),
+            "month_name": month_name_es,
             "year": year,
             "today": today,
             "weeks": monthly_view.weeks,
-            "weekday_names": self.WEEKDAY_NAMES,
+            "weekday_names": weekday_names,
+            "weekday_full_names": weekday_full_names_es,
+            "weekday_abbrev": weekday_abbrev_es,
             "daily_view": daily_view,
             "current_event": current_event,
             "upcoming_days": upcoming_days,
             "sync_timestamp": None,  # TODO: Add from sync metadata
+            "labels": spanish_labels,
         }
 
         # Render template to image
@@ -178,3 +207,25 @@ class RenderMonthlyViewUseCase:
             upcoming_days.append(day)
 
         return upcoming_days
+
+    def _get_rotated_weekday_names(self, week_start_day: int) -> List[str]:
+        """
+        Rotate weekday names based on week_start_day configuration.
+
+        Args:
+            week_start_day: Week start day (0=Monday, 1=Tuesday, ..., 6=Sunday)
+
+        Returns:
+            List of weekday names rotated to match configuration
+        """
+        # The base array is Sunday-first: ["Domingo", "Lunes", ..., "Sábado"]
+        # We need to rotate it based on week_start_day
+        # week_start_day=0 (Monday) -> rotate by 1: ["Lunes", "Martes", ..., "Domingo"]
+        # week_start_day=6 (Sunday) -> no rotation: ["Domingo", "Lunes", ..., "Sábado"]
+
+        # Calculate rotation: convert week_start_day (0=Mon) to Sunday-based index
+        # Monday(0) is index 1 in Sunday-first array, so rotation = (week_start_day + 1) % 7
+        rotation = (week_start_day + 1) % 7
+
+        # Rotate the array
+        return self.WEEKDAY_NAMES_BASE[rotation:] + self.WEEKDAY_NAMES_BASE[:rotation]
