@@ -94,8 +94,8 @@ body {
 .month-overview {
     width: 320px;
     height: 480px;
-    background: white;
-    color: black;
+    background: #D32F2F;
+    color: white;
     display: flex;
     flex-direction: column;
     padding: 15px;
@@ -117,7 +117,7 @@ body {
     font-size: 11px;
     font-weight: bold;
     text-align: center;
-    color: #666666;
+    color: white;
 }
 
 .mini-grid {
@@ -130,19 +130,19 @@ body {
     font-size: 11px;
     text-align: center;
     padding: 6px 4px;
-    color: black;
-    background: #e0e0e0;
+    color: white;
+    background: #B71C1C;
     border-radius: 2px;
 }
 
 .mini-day-today {
-    background: red;
+    background: black;
     color: white;
     font-weight: bold;
 }
 
 .mini-day-other {
-    color: #999999;
+    color: rgba(255, 255, 255, 0.4);
     background: transparent;
 }
 
@@ -158,12 +158,12 @@ body {
     transform: translateX(-50%);
     width: 3px;
     height: 3px;
-    background: #666666;
+    background: white;
     border-radius: 50%;
 }
 
 .mini-day-today.mini-day-events::after {
-    background: white;
+    background: #D32F2F;
 }
 
 /* Week Preview */
@@ -176,43 +176,46 @@ body {
     font-size: 11px;
     font-weight: bold;
     letter-spacing: 1px;
-    color: #333333;
+    color: white;
     margin-bottom: 8px;
     padding-bottom: 5px;
-    border-bottom: 1px solid #cccccc;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .week-day-row {
     display: flex;
     align-items: center;
     padding: 5px 0;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .week-day-today {
-    background: #f0f0f0;
+    background: #B71C1C;
     padding: 5px;
-    border-left: 3px solid red;
+    border-left: 3px solid black;
 }
 
 .week-day-label {
     font-size: 11px;
     font-weight: bold;
-    color: black;
+    color: white;
     min-width: 45px;
 }
 
 .week-day-count {
     font-size: 10px;
-    color: red;
+    color: black;
+    background: white;
     min-width: 15px;
+    padding: 1px 4px;
+    border-radius: 2px;
     text-align: center;
     font-weight: bold;
 }
 
 .week-day-preview {
     font-size: 11px;
-    color: #666666;
+    color: rgba(255, 255, 255, 0.9);
     flex: 1;
     margin-left: 8px;
     white-space: nowrap;
