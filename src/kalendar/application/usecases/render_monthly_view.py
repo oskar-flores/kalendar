@@ -4,7 +4,7 @@ Render Monthly View Use Case.
 Builds monthly calendar view and renders it to an image.
 """
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import List, Optional
 from pathlib import Path
 import logging
@@ -13,6 +13,7 @@ from PIL import Image
 from kalendar.domain.interfaces.IImageRenderer import IImageRenderer
 from kalendar.domain.models.config import DisplayConfiguration
 from kalendar.domain.models.event import CalendarEvent
+from kalendar.domain.models.view import Day, MonthlyView
 from kalendar.domain.services.monthly_view_builder import MonthlyViewBuilder
 from kalendar.domain.services.daily_view_builder import DailyViewBuilder
 
@@ -114,6 +115,9 @@ class RenderMonthlyViewUseCase:
         if current_time:
             current_event = daily_view.get_current_event(current_time)
 
+        # Build upcoming days view (today + next 6 days for week preview)
+        upcoming_days = self._build_upcoming_days(today, events, monthly_view)
+
         # Prepare template context
         context = {
             "month_name": monthly_view.get_month_name(),
@@ -123,6 +127,7 @@ class RenderMonthlyViewUseCase:
             "weekday_names": self.WEEKDAY_NAMES,
             "daily_view": daily_view,
             "current_event": current_event,
+            "upcoming_days": upcoming_days,
             "sync_timestamp": None,  # TODO: Add from sync metadata
         }
 
@@ -139,3 +144,37 @@ class RenderMonthlyViewUseCase:
         )
 
         return image
+
+    def _build_upcoming_days(
+        self, start_date: date, events: List[CalendarEvent], monthly_view: MonthlyView
+    ) -> List[Day]:
+        """
+        Build list of upcoming days with their events.
+
+        Args:
+            start_date: Starting date (typically today)
+            events: All calendar events
+            monthly_view: MonthlyView to extract event mappings from
+
+        Returns:
+            List of Day objects for the next 7 days (today + 6 more)
+        """
+        upcoming_days = []
+        events_by_date = monthly_view.events_by_date
+
+        for i in range(7):
+            current_date = start_date + timedelta(days=i)
+            is_today_flag = current_date == start_date
+            day_events = events_by_date.get(current_date, [])
+
+            day = Day(
+                date=current_date,
+                is_current_month=current_date.month == monthly_view.month,
+                is_today=is_today_flag,
+                has_events=len(day_events) > 0,
+                event_count=len(day_events),
+                events=day_events,
+            )
+            upcoming_days.append(day)
+
+        return upcoming_days

@@ -8,88 +8,114 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header Section -->
-        <header class="calendar-header">
-            <h1 class="month-title">{{ month_name }} {{ year }}</h1>
-            {% if sync_timestamp %}
-            <p class="sync-info">Last synced: {{ sync_timestamp }}</p>
-            {% endif %}
-        </header>
-
-        <!-- Main Calendar Grid -->
-        <div class="calendar-grid">
-            <!-- Weekday Headers -->
-            <div class="weekday-headers">
-                {% for day_name in weekday_names %}
-                <div class="weekday-header">{{ day_name[:3] }}</div>
-                {% endfor %}
+        <!-- LEFT SECTION: Day Hero -->
+        <section class="day-hero">
+            <div class="day-of-week">{{ today.strftime('%A').upper() }}</div>
+            <div class="day-number">{{ today.strftime('%-d') }}</div>
+            <div class="month-year">
+                <div class="month-name">{{ month_name.upper() }}</div>
+                <div class="year-number">{{ year }}</div>
             </div>
+        </section>
 
-            <!-- Weeks and Days -->
-            <div class="weeks-container">
-                {% for week in weeks %}
-                <div class="week-row">
-                    {% for day in week.days %}
-                    <div class="day-cell
-                        {% if day.is_today %} day-today{% endif %}
-                        {% if not day.is_current_month %} day-other-month{% endif %}
-                        {% if day.has_events %} day-has-events{% endif %}">
-
-                        <div class="day-number {% if day.is_today %}day-number-today{% endif %}">
-                            {{ day.date.day }}
-                        </div>
-
-                        {% if day.has_events %}
-                        <div class="event-indicators">
-                            {% if day.event_count <= 3 %}
-                                {% for event in day.events[:3] %}
-                                <div class="event-dot"></div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="event-dot"></div>
-                                <div class="event-dot"></div>
-                                <div class="event-count">+{{ day.event_count - 2 }}</div>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </div>
+        <!-- CENTER SECTION: Month Overview -->
+        <section class="month-overview">
+            <!-- Mini Calendar Grid -->
+            <div class="mini-calendar">
+                <!-- Weekday Headers -->
+                <div class="mini-weekdays">
+                    {% for day_name in weekday_names %}
+                    <div class="mini-weekday">{{ day_name[0] }}</div>
                     {% endfor %}
                 </div>
+
+                <!-- Calendar Grid -->
+                <div class="mini-grid">
+                    {% for week in weeks %}
+                        {% for day in week.days %}
+                        <div class="mini-day
+                            {% if day.is_today %} mini-day-today{% endif %}
+                            {% if not day.is_current_month %} mini-day-other{% endif %}
+                            {% if day.has_events %} mini-day-events{% endif %}">
+                            {{ day.date.day }}
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Week Preview -->
+            <div class="week-preview">
+                <div class="week-preview-title">THIS WEEK</div>
+                {% for day in upcoming_days[:5] %}
+                <div class="week-day-row {% if day.is_today %}week-day-today{% endif %}">
+                    <div class="week-day-label">{{ day.date.strftime('%a %-d') }}</div>
+                    <div class="week-day-count">{{ day.event_count if day.event_count > 0 else '' }}</div>
+                    {% if day.events %}
+                    <div class="week-day-preview">{{ day.events[0].title[:20] }}{% if day.events[0].title|length > 20 %}...{% endif %}</div>
+                    {% endif %}
+                </div>
                 {% endfor %}
             </div>
-        </div>
+        </section>
 
-        <!-- Today's Events Section -->
-        {% if daily_view and daily_view.events %}
-        <aside class="todays-events">
-            <h2 class="today-title">Today's Events</h2>
+        <!-- RIGHT SECTION: Events Detail -->
+        <section class="events-detail">
+            <h2 class="events-title">TODAY & UPCOMING</h2>
+
             <div class="events-list">
-                {% for event in daily_view.get_visible_events() %}
-                <div class="event-item {% if current_event and event.id == current_event.id %}event-current{% endif %}">
-                    <div class="event-time">
-                        {% if event.is_all_day %}
-                        All Day
-                        {% else %}
-                        {{ event.start_datetime.strftime('%H:%M') }}
-                        {% endif %}
+                {% if daily_view and daily_view.events %}
+                    <!-- Today's Events -->
+                    <div class="events-group">
+                        <div class="events-group-label">TODAY</div>
+                        {% for event in daily_view.get_visible_events() %}
+                        <div class="event-item {% if current_event and event.id == current_event.id %}event-current{% endif %}">
+                            <div class="event-time">
+                                {% if event.is_all_day %}
+                                All Day
+                                {% else %}
+                                {{ event.start_datetime.strftime('%H:%M') }}
+                                {% endif %}
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">{{ event.title[:35] }}{% if event.title|length > 35 %}...{% endif %}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
-                    <div class="event-details">
-                        <div class="event-title">{{ event.title[:40] }}{% if event.title|length > 40 %}...{% endif %}</div>
-                        {% if event.location %}
-                        <div class="event-location">📍 {{ event.location[:30] }}{% if event.location|length > 30 %}...{% endif %}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-
-                {% if daily_view.has_overflow() %}
-                <div class="event-overflow">
-                    + {{ daily_view.get_overflow_count() }} more event{% if daily_view.get_overflow_count() > 1 %}s{% endif %}
-                </div>
                 {% endif %}
+
+                <!-- Upcoming Events (next few days) -->
+                {% for day in upcoming_days[1:4] %}
+                    {% if day.events %}
+                    <div class="events-group">
+                        <div class="events-group-label">{{ day.date.strftime('%A').upper() }}</div>
+                        {% for event in day.events[:2] %}
+                        <div class="event-item event-upcoming">
+                            <div class="event-time">
+                                {% if event.is_all_day %}
+                                All Day
+                                {% else %}
+                                {{ event.start_datetime.strftime('%H:%M') }}
+                                {% endif %}
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">{{ event.title[:35] }}{% if event.title|length > 35 %}...{% endif %}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if day.event_count > 2 %}
+                        <div class="event-more">+{{ day.event_count - 2 }} more</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
             </div>
-        </aside>
-        {% endif %}
+
+            {% if sync_timestamp %}
+            <div class="sync-info">Synced: {{ sync_timestamp.strftime('%H:%M') }}</div>
+            {% endif %}
+        </section>
     </div>
 </body>
 </html>

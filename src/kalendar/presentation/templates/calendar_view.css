@@ -1,14 +1,11 @@
 /**
- * Calendar Display Stylesheet
+ * Calendar Display Stylesheet - Bold Black/Gray/Red Design
  *
  * Target: Waveshare 7.5" 3-color e-paper display
  * Resolution: 800x480 pixels (landscape)
  * Colors: Black, Red, White (per FR-010)
  *
- * Color Usage:
- * - Red: Current day, current event (FR-010)
- * - Black: All other text
- * - White: Background
+ * Layout: 3-column (280px Day Hero | 320px Month Overview | 200px Events)
  */
 
 /* Global Styles */
@@ -20,167 +17,250 @@
 
 body {
     font-family: Arial, Helvetica, sans-serif;
-    background: white;
-    color: black;
     width: 800px;
     height: 480px;
     overflow: hidden;
+    background: black;
 }
 
 .container {
     width: 100%;
     height: 100%;
-    padding: 10px;
+    display: flex;
+    flex-direction: row;
+}
+
+/* ===== LEFT SECTION: Day Hero ===== */
+.day-hero {
+    width: 280px;
+    height: 480px;
+    background: black;
+    color: white;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    border-right: 4px solid red;
 }
 
-/* Header Section */
-.calendar-header {
-    text-align: center;
-    margin-bottom: 8px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid black;
-}
-
-.month-title {
-    font-size: 24px;
+.day-of-week {
+    font-size: 18px;
     font-weight: bold;
-    color: black;
-    margin-bottom: 2px;
-}
-
-.sync-info {
-    font-size: 10px;
-    color: black;
-}
-
-/* Calendar Grid */
-.calendar-grid {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-right: 200px; /* Leave space for today's events */
-}
-
-.weekday-headers {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-    margin-bottom: 4px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid black;
-}
-
-.weekday-header {
-    font-size: 12px;
-    font-weight: bold;
-    text-align: center;
-    color: black;
-}
-
-/* Weeks and Days */
-.weeks-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.week-row {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
-    flex: 1;
-}
-
-.day-cell {
-    border: 1px solid black;
-    padding: 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    background: white;
-    position: relative;
+    letter-spacing: 2px;
+    color: #cccccc;
+    margin-bottom: 10px;
 }
 
 .day-number {
-    font-size: 14px;
+    font-size: 120px;
     font-weight: bold;
-    color: black;
+    line-height: 1;
+    color: white;
+    margin: 10px 0;
 }
 
-/* Current Day Highlighting (RED per FR-010) */
-.day-today {
-    background: white;
-    border: 2px solid red;
+.month-year {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid red;
+    width: 100%;
 }
 
-.day-number-today {
-    color: red;
+.month-name {
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.year-number {
     font-size: 16px;
+    color: #999999;
+    letter-spacing: 1px;
 }
 
-/* Other Month Days (Dimmed) */
-.day-other-month {
-    opacity: 0.3;
-}
-
-/* Event Indicators */
-.event-indicators {
+/* ===== CENTER SECTION: Month Overview ===== */
+.month-overview {
+    width: 320px;
+    height: 480px;
+    background: #1a1a1a;
+    color: white;
     display: flex;
+    flex-direction: column;
+    padding: 15px;
+}
+
+/* Mini Calendar */
+.mini-calendar {
+    margin-bottom: 20px;
+}
+
+.mini-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
     gap: 2px;
-    align-items: center;
-    margin-top: 2px;
+    margin-bottom: 6px;
 }
 
-.event-dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: black;
+.mini-weekday {
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    color: #888888;
 }
 
-.event-count {
-    font-size: 8px;
-    color: black;
+.mini-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
 }
 
-/* Today's Events Sidebar */
-.todays-events {
+.mini-day {
+    font-size: 11px;
+    text-align: center;
+    padding: 6px 4px;
+    color: white;
+    background: #2a2a2a;
+    border-radius: 2px;
+}
+
+.mini-day-today {
+    background: red;
+    color: white;
+    font-weight: bold;
+}
+
+.mini-day-other {
+    color: #555555;
+    background: transparent;
+}
+
+.mini-day-events {
+    position: relative;
+}
+
+.mini-day-events::after {
+    content: '';
     position: absolute;
-    right: 10px;
-    top: 60px;
-    width: 190px;
-    height: 400px;
-    border: 2px solid black;
-    padding: 8px;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    background: #888888;
+    border-radius: 50%;
+}
+
+.mini-day-today.mini-day-events::after {
     background: white;
 }
 
-.today-title {
-    font-size: 14px;
+/* Week Preview */
+.week-preview {
+    flex: 1;
+    margin-top: 10px;
+}
+
+.week-preview-title {
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #666666;
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #333333;
+}
+
+.week-day-row {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.week-day-today {
+    background: #2a2a2a;
+    padding: 5px;
+    border-left: 3px solid red;
+}
+
+.week-day-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+    min-width: 45px;
+}
+
+.week-day-count {
+    font-size: 10px;
+    color: red;
+    min-width: 15px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.week-day-preview {
+    font-size: 10px;
+    color: #999999;
+    flex: 1;
+    margin-left: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ===== RIGHT SECTION: Events Detail ===== */
+.events-detail {
+    width: 200px;
+    height: 480px;
+    background: white;
+    color: black;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    overflow: hidden;
+}
+
+.events-title {
+    font-size: 13px;
     font-weight: bold;
     color: black;
-    margin-bottom: 8px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid black;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid red;
+    letter-spacing: 0.5px;
 }
 
 .events-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    flex: 1;
+    overflow: hidden;
 }
 
+/* Events Groups */
+.events-group {
+    margin-bottom: 12px;
+}
+
+.events-group-label {
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #666666;
+    margin-bottom: 5px;
+}
+
+/* Event Items */
 .event-item {
     display: flex;
     gap: 6px;
-    padding: 4px;
-    border-left: 2px solid black;
+    padding: 5px 0 5px 6px;
+    border-left: 2px solid #cccccc;
+    margin-bottom: 4px;
 }
 
-/* Current Event (RED per FR-010) */
 .event-current {
     border-left-color: red;
 }
@@ -190,35 +270,43 @@ body {
     font-weight: bold;
 }
 
-.event-time {
-    font-size: 10px;
-    font-weight: bold;
-    color: black;
-    min-width: 40px;
+.event-upcoming {
+    opacity: 0.8;
 }
 
-.event-details {
+.event-time {
+    font-size: 9px;
+    font-weight: bold;
+    color: black;
+    min-width: 35px;
+}
+
+.event-content {
     flex: 1;
 }
 
 .event-title {
-    font-size: 11px;
-    font-weight: bold;
-    color: black;
-    margin-bottom: 2px;
-}
-
-.event-location {
-    font-size: 9px;
-    color: black;
-}
-
-.event-overflow {
     font-size: 10px;
+    font-weight: 600;
     color: black;
-    text-align: center;
-    padding: 4px;
+    line-height: 1.3;
+}
+
+.event-more {
+    font-size: 9px;
+    color: #999999;
     font-style: italic;
+    padding-left: 6px;
+}
+
+/* Sync Info */
+.sync-info {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid #e0e0e0;
+    font-size: 8px;
+    color: #999999;
+    text-align: center;
 }
 
 /* Print Optimization */
