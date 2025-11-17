@@ -7,7 +7,7 @@ for Waveshare 7.5" 3-color e-paper display.
 
 from typing import Tuple
 import logging
-from PIL import Image
+from PIL import Image, ImageFilter, ImageEnhance
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,13 @@ class ImagePostProcessor:
         if rgb_image.mode != "RGB":
             logger.warning(f"Converting image from {rgb_image.mode} to RGB")
             rgb_image = rgb_image.convert("RGB")
+
+        # Apply sharpening before color threshold conversion
+        # This helps preserve text edges for e-ink display
+        logger.info("Applying sharpening filter for e-ink optimization")
+        sharpener = ImageEnhance.Sharpness(rgb_image)
+        rgb_image = sharpener.enhance(1.5)  # 1.5x sharpening
+        rgb_image = rgb_image.filter(ImageFilter.SHARPEN)
 
         width, height = rgb_image.size
         logger.info(f"Splitting {width}x{height} RGB image into black/red layers")

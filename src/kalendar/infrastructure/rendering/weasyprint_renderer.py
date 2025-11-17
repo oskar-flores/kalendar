@@ -109,11 +109,17 @@ class WeasyPrintRenderer(IImageRenderer):
             # Render to PDF in memory (WeasyPrint 53+)
             pdf_bytes = html.write_pdf(stylesheets=[css_obj])
 
-            # Convert PDF to PNG using pdf2image (Poppler-based)
+            # Supersampling for e-ink: render at 2x DPI, then downsample
+            # This creates crisper text that converts better to 1-bit black/white/red
+            supersample_dpi = 192  # 2x standard DPI
+            supersample_width = width * 2
+            supersample_height = height * 2
+
+            # Convert PDF to PNG at higher resolution
             images = convert_from_bytes(
                 pdf_bytes,
-                dpi=96,  # Standard web DPI
-                size=(width, height),  # Target size
+                dpi=supersample_dpi,
+                size=(supersample_width, supersample_height),
                 fmt='png'
             )
 
@@ -129,7 +135,11 @@ class WeasyPrintRenderer(IImageRenderer):
             elif image.mode != "RGB":
                 image = image.convert("RGB")
 
-            logger.info(f"Rendered HTML to {image.width}x{image.height} image")
+            # Downsample to target resolution using high-quality LANCZOS resampling
+            # This provides natural antialiasing that works better for 1-bit conversion
+            image = image.resize((width, height), Image.Resampling.LANCZOS)
+
+            logger.info(f"Rendered HTML at {supersample_width}x{supersample_height}, downsampled to {image.width}x{image.height}")
             return image
 
         except Exception as e:
