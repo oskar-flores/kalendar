@@ -7,6 +7,8 @@ NOTE: This driver requires actual hardware and only works on Raspberry Pi.
 Use SimulatorDisplayDriver or MockDisplayDriver for development/testing.
 """
 
+import logging
+import signal
 from typing import Optional, Tuple
 
 from PIL import Image
@@ -16,6 +18,18 @@ from kalendar.domain.interfaces.IDisplayDriver import (
     DisplayNotInitializedError,
     IDisplayDriver,
 )
+
+logger = logging.getLogger(__name__)
+
+
+class TimeoutError(Exception):
+    """Raised when a hardware operation times out."""
+    pass
+
+
+def timeout_handler(signum, frame):
+    """Signal handler for timeout."""
+    raise TimeoutError("Hardware operation timed out")
 
 
 class WaveshareEPD75BDriver(IDisplayDriver):
@@ -56,18 +70,43 @@ class WaveshareEPD75BDriver(IDisplayDriver):
         Raises:
             DisplayHardwareError: If hardware initialization fails
         """
+        logger.info("Initializing Waveshare 7.5\" e-Paper display...")
+
         try:
             # Configure GPIO pin factory to use lgpio (modern backend for Raspberry Pi)
             # This must be set before importing waveshare_epd
             import os
             os.environ.setdefault('GPIOZERO_PIN_FACTORY', 'lgpio')
+            logger.debug("GPIO factory set to lgpio")
 
             # Import Waveshare library (only available on Raspberry Pi)
             # This import will fail in development/test environments
+            logger.debug("Importing Waveshare library...")
             from waveshare_epd import epd7in5b_V2
 
+            logger.debug("Creating EPD instance...")
             self._epd = epd7in5b_V2.EPD()
-            self._epd.init()
+
+            # Initialize hardware with timeout protection (60 seconds)
+            logger.info("Calling EPD.init() - this may take up to 60 seconds...")
+
+            # Set up timeout using signal.alarm()
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(60)  # 60 second timeout
+
+            try:
+                self._epd.init()
+                signal.alarm(0)  # Cancel alarm on success
+                logger.info("Display initialized successfully")
+            except TimeoutError:
+                signal.alarm(0)  # Cancel alarm
+                raise DisplayHardwareError(
+                    "Display initialization timed out after 60 seconds. "
+                    "This usually indicates: (1) BUSY pin stuck HIGH, "
+                    "(2) SPI communication failure, or (3) Hardware not connected. "
+                    "Check: SPI enabled, cables connected, adequate power supply."
+                )
+
             self._initialized = True
 
         except ImportError as e:
@@ -76,7 +115,11 @@ class WaveshareEPD75BDriver(IDisplayDriver):
                 "with waveshare-epd library installed. "
                 "For development, use SimulatorDisplayDriver instead."
             ) from e
+        except TimeoutError:
+            # Re-raise TimeoutError wrapped as DisplayHardwareError
+            raise
         except Exception as e:
+            signal.alarm(0)  # Ensure alarm is cancelled
             raise DisplayHardwareError(f"Failed to initialize display hardware: {e}") from e
 
     def display(self, black_image: Image.Image, red_image: Image.Image) -> None:
@@ -117,16 +160,44 @@ class WaveshareEPD75BDriver(IDisplayDriver):
                 f"Red image must be mode '1' (1-bit), got '{red_image.mode}'"
             )
 
+        logger.info("Converting images to display buffers...")
+
         try:
             # Use Waveshare library's getbuffer() method to convert images
             # This ensures proper buffer format and mutability
+            logger.debug("Calling getbuffer() for black image...")
             black_buffer = self._epd.getbuffer(black_image)
+
+            logger.debug("Calling getbuffer() for red image...")
             red_buffer = self._epd.getbuffer(red_image)
 
-            # Send to display
-            self._epd.display(black_buffer, red_buffer)
+            # Send to display with timeout protection (90 seconds for full refresh)
+            logger.info("Sending display data (this may take up to 90 seconds)...")
 
+            # Set up timeout using signal.alarm()
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(90)  # 90 second timeout (display refresh ~30s + buffer)
+
+            try:
+                logger.debug("Calling EPD.display() - waiting for hardware...")
+                self._epd.display(black_buffer, red_buffer)
+                signal.alarm(0)  # Cancel alarm on success
+                logger.info("Display update completed successfully")
+            except TimeoutError:
+                signal.alarm(0)  # Cancel alarm
+                raise DisplayHardwareError(
+                    "Display update timed out after 90 seconds. "
+                    "This usually indicates: (1) BUSY pin stuck HIGH during refresh, "
+                    "(2) Hardware malfunction, or (3) Power supply issue during refresh. "
+                    "The display refresh normally takes ~30 seconds. "
+                    "Check: Power supply adequate for display refresh, SPI communication stable."
+                )
+
+        except TimeoutError:
+            # Re-raise TimeoutError as is (already wrapped)
+            raise
         except Exception as e:
+            signal.alarm(0)  # Ensure alarm is cancelled
             raise DisplayHardwareError(f"Failed to update display: {e}") from e
 
     def clear(self) -> None:
