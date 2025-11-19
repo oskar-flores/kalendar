@@ -9,7 +9,6 @@ from typing import Tuple
 import logging
 import time
 from PIL import Image, ImageFilter, ImageEnhance
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -69,44 +68,58 @@ class ImagePostProcessor:
         width, height = rgb_image.size
         logger.info(f"Splitting {width}x{height} RGB image into black/red layers")
 
-        # Convert PIL image to NumPy array for vectorized operations (much faster)
-        # Shape: (height, width, 3) with RGB values 0-255
+        # Get raw RGB bytes using Pillow's tobytes() - fast C operation
+        # Format: R1 G1 B1 R2 G2 B2 R3 G3 B3 ... (3 bytes per pixel)
         conversion_start = time.time()
-        rgb_array = np.array(rgb_image)
+        rgb_bytes = rgb_image.tobytes()
 
-        # Extract individual color channels
-        r = rgb_array[:, :, 0]
-        g = rgb_array[:, :, 1]
-        b = rgb_array[:, :, 2]
+        # Create output byte arrays for black and red layers
+        # Initialize all pixels to 255 (white)
+        pixel_count = width * height
+        black_bytes = bytearray(pixel_count)
+        red_bytes = bytearray(pixel_count)
 
-        # Vectorized color detection (operates on entire arrays at once)
-        # Red pixels: R > 200 AND G < 100 AND B < 100
-        is_red = (r > self.RED_THRESHOLD_R) & (g < self.RED_THRESHOLD_GB) & (b < self.RED_THRESHOLD_GB)
+        # Initialize all to white (255)
+        for i in range(pixel_count):
+            black_bytes[i] = 255
+            red_bytes[i] = 255
 
-        # Black pixels: R+G+B < 100
-        is_black = ((r.astype(np.uint16) + g.astype(np.uint16) + b.astype(np.uint16)) < self.BLACK_THRESHOLD_TOTAL)
+        # Process each pixel using byte offsets
+        # Each pixel is 3 consecutive bytes: R, G, B
+        red_count = 0
+        black_count = 0
 
-        # Create output arrays (initialized to white = 255)
-        black_array = np.full((height, width), 255, dtype=np.uint8)
-        red_array = np.full((height, width), 255, dtype=np.uint8)
+        for i in range(pixel_count):
+            # Calculate byte offset for this pixel (3 bytes per pixel)
+            byte_offset = i * 3
+            r = rgb_bytes[byte_offset]
+            g = rgb_bytes[byte_offset + 1]
+            b = rgb_bytes[byte_offset + 2]
 
-        # Set pixel values based on color detection
-        # Red pixels: 0 in red layer, 255 (white) in black layer
-        red_array[is_red] = 0
-        black_array[is_red] = 255
+            # Check if pixel is red: R > 200 AND G < 100 AND B < 100
+            if r > self.RED_THRESHOLD_R and g < self.RED_THRESHOLD_GB and b < self.RED_THRESHOLD_GB:
+                red_bytes[i] = 0  # Red pixel in red layer
+                black_bytes[i] = 255  # White in black layer
+                red_count += 1
 
-        # Black pixels: 0 in black layer, 255 (white) in red layer
-        black_array[is_black] = 0
-        red_array[is_black] = 255
+            # Check if pixel is black: R+G+B < 100
+            elif (r + g + b) < self.BLACK_THRESHOLD_TOTAL:
+                black_bytes[i] = 0  # Black pixel in black layer
+                red_bytes[i] = 255  # White in red layer
+                black_count += 1
 
-        # Convert NumPy arrays back to PIL 1-bit images
-        black_layer = Image.fromarray(black_array, mode='L').convert('1')
-        red_layer = Image.fromarray(red_array, mode='L').convert('1')
-        logger.debug(f"Vectorized layer conversion took {time.time() - conversion_start:.3f}s")
+            # Otherwise: white (already initialized to 255)
 
-        # Count pixels for logging
-        red_count = np.sum(is_red)
-        black_count = np.sum(is_black)
+        # Convert byte arrays back to PIL images
+        # frombytes() is a fast C operation
+        black_layer = Image.frombytes('L', (width, height), bytes(black_bytes))
+        red_layer = Image.frombytes('L', (width, height), bytes(red_bytes))
+
+        # Convert to 1-bit images for e-paper display
+        black_layer = black_layer.convert('1')
+        red_layer = red_layer.convert('1')
+
+        logger.debug(f"Layer conversion took {time.time() - conversion_start:.3f}s")
 
         total_time = time.time() - start_time
         logger.info(
