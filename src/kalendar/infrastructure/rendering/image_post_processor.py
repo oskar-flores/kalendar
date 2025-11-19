@@ -7,7 +7,9 @@ for Waveshare 7.5" 3-color e-paper display.
 
 from typing import Tuple
 import logging
+import time
 from PIL import Image, ImageFilter, ImageEnhance
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +51,8 @@ class ImagePostProcessor:
             - black_layer: 0=black pixel, 255=white pixel
             - red_layer: 0=red pixel, 255=white pixel
         """
+        start_time = time.time()
+
         if rgb_image.mode != "RGB":
             logger.warning(f"Converting image from {rgb_image.mode} to RGB")
             rgb_image = rgb_image.convert("RGB")
@@ -56,47 +60,58 @@ class ImagePostProcessor:
         # Apply sharpening before color threshold conversion
         # This helps preserve text edges for e-ink display
         logger.info("Applying sharpening filter for e-ink optimization")
+        sharpen_start = time.time()
         sharpener = ImageEnhance.Sharpness(rgb_image)
         rgb_image = sharpener.enhance(1.5)  # 1.5x sharpening
         rgb_image = rgb_image.filter(ImageFilter.SHARPEN)
+        logger.debug(f"Sharpening took {time.time() - sharpen_start:.3f}s")
 
         width, height = rgb_image.size
         logger.info(f"Splitting {width}x{height} RGB image into black/red layers")
 
-        # Create 1-bit output images (initialized to white = 255)
-        black_layer = Image.new("1", (width, height), 255)
-        red_layer = Image.new("1", (width, height), 255)
+        # Convert PIL image to NumPy array for vectorized operations (much faster)
+        # Shape: (height, width, 3) with RGB values 0-255
+        conversion_start = time.time()
+        rgb_array = np.array(rgb_image)
 
-        # Get pixel access objects
-        rgb_pixels = rgb_image.load()
-        black_pixels = black_layer.load()
-        red_pixels = red_layer.load()
+        # Extract individual color channels
+        r = rgb_array[:, :, 0]
+        g = rgb_array[:, :, 1]
+        b = rgb_array[:, :, 2]
 
-        # Process each pixel
-        red_count = 0
-        black_count = 0
+        # Vectorized color detection (operates on entire arrays at once)
+        # Red pixels: R > 200 AND G < 100 AND B < 100
+        is_red = (r > self.RED_THRESHOLD_R) & (g < self.RED_THRESHOLD_GB) & (b < self.RED_THRESHOLD_GB)
 
-        for y in range(height):
-            for x in range(width):
-                r, g, b = rgb_pixels[x, y]
+        # Black pixels: R+G+B < 100
+        is_black = ((r.astype(np.uint16) + g.astype(np.uint16) + b.astype(np.uint16)) < self.BLACK_THRESHOLD_TOTAL)
 
-                # Check if pixel is red
-                if self._is_red(r, g, b):
-                    red_pixels[x, y] = 0  # 0 = red pixel in red layer
-                    black_pixels[x, y] = 255  # white in black layer
-                    red_count += 1
+        # Create output arrays (initialized to white = 255)
+        black_array = np.full((height, width), 255, dtype=np.uint8)
+        red_array = np.full((height, width), 255, dtype=np.uint8)
 
-                # Check if pixel is black
-                elif self._is_black(r, g, b):
-                    black_pixels[x, y] = 0  # 0 = black pixel in black layer
-                    red_pixels[x, y] = 255  # white in red layer
-                    black_count += 1
+        # Set pixel values based on color detection
+        # Red pixels: 0 in red layer, 255 (white) in black layer
+        red_array[is_red] = 0
+        black_array[is_red] = 255
 
-                # Otherwise it's white (already initialized to 255)
+        # Black pixels: 0 in black layer, 255 (white) in red layer
+        black_array[is_black] = 0
+        red_array[is_black] = 255
 
+        # Convert NumPy arrays back to PIL 1-bit images
+        black_layer = Image.fromarray(black_array, mode='L').convert('1')
+        red_layer = Image.fromarray(red_array, mode='L').convert('1')
+        logger.debug(f"Vectorized layer conversion took {time.time() - conversion_start:.3f}s")
+
+        # Count pixels for logging
+        red_count = np.sum(is_red)
+        black_count = np.sum(is_black)
+
+        total_time = time.time() - start_time
         logger.info(
             f"Layer separation complete: {black_count} black pixels, "
-            f"{red_count} red pixels"
+            f"{red_count} red pixels (total: {total_time:.3f}s)"
         )
 
         return black_layer, red_layer
